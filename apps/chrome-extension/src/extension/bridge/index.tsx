@@ -146,12 +146,20 @@ export default function Bridge() {
     }
 
     return () => {
-      bridgeConnectorRef.current?.disconnect();
+      if (bridgeConnectorRef.current) {
+        bridgeConnectorRef.current.disconnect().catch((error) => {
+          console.warn('Error disconnecting bridge on cleanup:', error);
+        });
+      }
     };
   }, []);
 
   const stopConnection = () => {
-    bridgeConnectorRef.current?.disconnect();
+    if (bridgeConnectorRef.current) {
+      bridgeConnectorRef.current.disconnect().catch((error) => {
+        console.warn('Error disconnecting bridge:', error);
+      });
+    }
   };
 
   const startConnection = async () => {

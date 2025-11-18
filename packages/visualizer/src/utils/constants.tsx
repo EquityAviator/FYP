@@ -15,26 +15,26 @@ export const domIncludedTip = 'include DOM info in request';
 export const apiMetadata = {
   aiAction: {
     group: 'interaction',
-    title: 'Auto Planning: plan the steps and execute',
+    title: 'Scan Page: Analyze webpage for dark patterns automatically',
   },
-  aiTap: { group: 'interaction', title: 'Click an element' },
-  aiDoubleClick: { group: 'interaction', title: 'Double-click an element' },
-  aiHover: { group: 'interaction', title: 'Hover over an element' },
-  aiInput: { group: 'interaction', title: 'Input text into an element' },
-  aiRightClick: { group: 'interaction', title: 'Right-click an element' },
+  aiTap: { group: 'interaction', title: 'Click element to test interaction' },
+  aiDoubleClick: { group: 'interaction', title: 'Double-click element' },
+  aiHover: { group: 'interaction', title: 'Hover over element to reveal hidden content' },
+  aiInput: { group: 'interaction', title: 'Input text to test form behavior' },
+  aiRightClick: { group: 'interaction', title: 'Right-click element' },
   aiKeyboardPress: { group: 'interaction', title: 'Press keyboard keys' },
-  aiScroll: { group: 'interaction', title: 'Scroll the page or element' },
-  aiLocate: { group: 'interaction', title: 'Locate an element on the page' },
+  aiScroll: { group: 'interaction', title: 'Scroll page to reveal hidden patterns' },
+  aiLocate: { group: 'interaction', title: 'Locate suspicious element on page' },
   aiQuery: {
     group: 'extraction',
-    title: 'Extract data directly from the UI',
+    title: 'Extract dark pattern data from UI elements',
   },
-  aiBoolean: { group: 'extraction', title: 'Get true/false answer' },
-  aiNumber: { group: 'extraction', title: 'Extract numeric value' },
-  aiString: { group: 'extraction', title: 'Extract text value' },
-  aiAsk: { group: 'extraction', title: 'Ask a question about the UI' },
-  aiAssert: { group: 'validation', title: 'Assert a condition is true' },
-  aiWaitFor: { group: 'validation', title: 'Wait for a condition to be met' },
+  aiBoolean: { group: 'extraction', title: 'Check if dark pattern exists (true/false)' },
+  aiNumber: { group: 'extraction', title: 'Extract numeric value from deceptive element' },
+  aiString: { group: 'extraction', title: 'Extract text from UI element' },
+  aiAsk: { group: 'extraction', title: 'Ask AI about dark patterns in the UI' },
+  aiAssert: { group: 'validation', title: 'Verify if dark pattern condition exists' },
+  aiWaitFor: { group: 'validation', title: 'Wait for dark pattern to appear' },
 };
 
 export const defaultMainButtons = ['aiAction', 'aiTap', 'aiQuery', 'aiAssert'];
@@ -43,13 +43,18 @@ export const defaultMainButtons = ['aiAction', 'aiTap', 'aiQuery', 'aiAssert'];
 export const WELCOME_MESSAGE_TEMPLATE: Omit<InfoListItem, 'id' | 'timestamp'> =
   {
     type: 'system',
-    content: `
-      Welcome to Midscene.js Playground!
-      
-      This is a panel for experimenting and testing Midscene.js features. You can use natural language instructions to operate the web page, such as clicking buttons, filling in forms, querying information, etc.
-      
-      Please enter your instructions in the input box below to start experiencing.
-    `,
+    content: `Welcome to Pattern Hunter - Dark Pattern Detection Scanner!
+
+This is a panel for analyzing webpages and detecting deceptive UI design patterns using the UI-TARS AI model. You can use natural language instructions to scan pages for dark patterns such as:
+
+• Forced Action - Elements that pressure users into actions
+• Fake Scarcity - False urgency or limited availability claims  
+• Hidden Costs - Undisclosed fees or charges
+• Bait-and-Switch - Misleading offers or redirects
+• Confirmshaming - Guilt-inducing opt-out language
+• And many more deceptive patterns
+
+Enter your instructions in the input box below to start scanning the current webpage for dark patterns. The AI will analyze the page and report any deceptive UI elements it detects.`,
     loading: false,
     result: undefined,
     replayScriptsInfo: null,

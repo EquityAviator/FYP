@@ -1,6 +1,6 @@
 {
-  "name": "Midscene.js",
-  "description": "Open-source SDK for automating web pages using natural language through AI.",
+  "name": "Pattern Hunter",
+  "description": "AI-powered browser extension to detect dark patterns and deceptive UI elements using UI-TARS model.",
   "version": "0.139",
   "manifest_version": 3,
   "permissions": [
@@ -12,7 +12,7 @@
   ],
   "incognito": "split",
   "background": {
-    "service_worker": "./scripts/worker.js"
+    "service_worker": "scripts/worker.js"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
@@ -32,10 +32,10 @@
   ],
   "action": {
     "default_icon": "icon128.png",
-    "default_title": "Midscene.js"
+    "default_title": "Pattern Hunter"
   },
   "side_panel": {
-    "default_path": "./index.html"
+    "default_path": "index.html"
   },
   "icons": {
     "128": "icon128.png"

@@ -213,11 +213,11 @@ export default class ChromeExtensionProxyPage implements AbstractInterface {
 
   private async detachDebugger(tabId?: number) {
     const tabIdToDetach = tabId || this.tabIdOfDebuggerAttached;
-    console.log('detaching debugger', tabIdToDetach);
     if (!tabIdToDetach) {
-      console.warn('No tab id to detach');
+      // No debugger attached, nothing to detach - this is normal
       return;
     }
+    console.log('detaching debugger', tabIdToDetach);
 
     try {
       await this.disableWaterFlowAnimation(tabIdToDetach);

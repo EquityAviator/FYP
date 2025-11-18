@@ -17,6 +17,11 @@ import './App.less';
 declare const __APP_VERSION__: string;
 declare const __SERVER_URL__: string;
 
+const DEFAULT_SERVER_URL =
+  (__SERVER_URL__ && __SERVER_URL__.length > 0
+    ? __SERVER_URL__
+    : 'http://127.0.0.1:5807') as string;
+
 const { Content } = Layout;
 
 export default function App() {
@@ -26,8 +31,7 @@ export default function App() {
 
   // Create PlaygroundSDK and storage provider
   const playgroundSDK = useMemo(() => {
-    // Support environment variable for serverUrl, fallback to default
-    const serverUrl = __SERVER_URL__;
+    const serverUrl = DEFAULT_SERVER_URL;
     const sdk = new PlaygroundSDK({
       type: 'remote-execution',
       serverUrl,
@@ -127,10 +131,19 @@ export default function App() {
                 <div className="playground-panel-header">
                   <div className="header-row">
                     <Logo />
-                    <NavActions
-                      showTooltipWhenEmpty={false}
-                      showModelName={false}
-                    />
+                    <div className="header-actions">
+                      <div
+                        className="server-url-chip"
+                        title={`Playground server ${DEFAULT_SERVER_URL}`}
+                      >
+                        Server: {DEFAULT_SERVER_URL}
+                      </div>
+                      <NavActions
+                        showEnvConfig={false}
+                        showTooltipWhenEmpty={false}
+                        showModelName={false}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -144,7 +157,7 @@ export default function App() {
                       showVersionInfo: true,
                       enableScrollToBottom: true,
                       serverMode: true,
-                      showEnvConfigReminder: true,
+                      showEnvConfigReminder: false,
                     }}
                     branding={{
                       title: 'Playground',

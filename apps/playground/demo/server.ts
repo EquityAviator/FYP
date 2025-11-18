@@ -1,3 +1,4 @@
+import { createServer } from 'node:net';
 import { playgroundForAgent } from '@midscene/playground';
 import { PuppeteerAgent } from '@midscene/web/puppeteer';
 import dotenv from 'dotenv';
@@ -6,6 +7,34 @@ import puppeteer from 'puppeteer';
 dotenv.config({
   path: '../../.env',
 });
+
+async function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.once('error', () => resolve(false));
+    server.listen(port, () => {
+      server.close(() => resolve(true));
+    });
+  });
+}
+
+async function findAvailablePort(startPort: number): Promise<number> {
+  let port = startPort;
+  const maxAttempts = 20;
+  let attempts = 0;
+
+  while (!(await isPortAvailable(port))) {
+    attempts++;
+    if (attempts >= maxAttempts) {
+      throw new Error(
+        `Unable to find available port after ${maxAttempts} attempts starting from ${startPort}`,
+      );
+    }
+    port++;
+  }
+
+  return port;
+}
 
 async function main() {
   console.log('🚀 Starting Playground Demo Server...');
@@ -34,9 +63,17 @@ async function main() {
     cacheId: 'playground-demo-test',
   });
 
+  const preferredPort = Number(process.env.PLAYGROUND_DEMO_PORT ?? 5870);
+  const availablePort = await findAvailablePort(preferredPort);
+  if (availablePort !== preferredPort) {
+    console.log(
+      `⚠️  Port ${preferredPort} is in use, falling back to ${availablePort}`,
+    );
+  }
+
   // Launch playground server with CORS enabled for playground app
   const server = await playgroundForAgent(agent).launch({
-    port: 5870, // Use different port from web-integration demo
+    port: availablePort,
     openBrowser: false, // Don't open browser automatically
     verbose: true,
     enableCors: true,

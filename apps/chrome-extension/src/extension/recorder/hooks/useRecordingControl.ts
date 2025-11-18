@@ -496,8 +496,12 @@ export const useRecordingControl = (
 
     return () => {
       isConnected = false;
-      if (port && 'disconnect' in port) {
-        port.disconnect();
+      try {
+        if (port && 'disconnect' in port) {
+          port.disconnect();
+        }
+      } catch (error) {
+        console.warn('Error disconnecting port on cleanup:', error);
       }
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);

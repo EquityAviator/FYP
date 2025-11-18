@@ -74,16 +74,23 @@ export class BridgeConnector {
 
   async disconnect(): Promise<void> {
     if (this.status === 'closed') {
-      console.warn('Cannot stop connection if not connected');
       return;
     }
 
-    if (this.activeBridgePage) {
-      await this.activeBridgePage.destroy();
-      this.activeBridgePage = null;
+    try {
+      if (this.activeBridgePage) {
+        try {
+          await this.activeBridgePage.destroy();
+        } catch (error) {
+          console.warn('Error destroying bridge page:', error);
+        }
+        this.activeBridgePage = null;
+      }
+    } catch (error) {
+      console.warn('Error during disconnect:', error);
+    } finally {
+      this.setStatus('closed');
     }
-
-    this.setStatus('closed');
   }
 
   getStatus(): BridgeStatus {

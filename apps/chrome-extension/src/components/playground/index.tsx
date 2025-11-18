@@ -6,10 +6,7 @@ import {
 } from '@midscene/visualizer';
 import { useEnvConfig } from '@midscene/visualizer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { getExtensionVersion } from '../../utils/chrome';
 import './index.less';
-
-declare const __SDK_VERSION__: string;
 
 export interface PlaygroundProps {
   getAgent: (forceSameTabNavigation?: boolean) => any | null;
@@ -23,7 +20,6 @@ export function BrowserExtensionPlayground({
   showContextPreview = true,
   dryMode = false,
 }: PlaygroundProps) {
-  const extensionVersion = getExtensionVersion();
   const { forceSameTabNavigation } = useEnvConfig((state) => ({
     forceSameTabNavigation: state.forceSameTabNavigation,
   }));
@@ -50,16 +46,27 @@ export function BrowserExtensionPlayground({
     try {
       const targets = await chrome.debugger.getTargets();
       for (const target of targets) {
-        if (target.attached && target.tabId) {
+        if (target.attached && target.tabId && typeof target.tabId === 'number') {
           try {
             await chrome.debugger.detach({ tabId: target.tabId });
           } catch (e) {
-            // Ignore errors, debugger might already be detached
+            // Ignore errors, debugger might already be detached or tab closed
+            if (chrome.runtime.lastError) {
+              // Suppress "No tab id to detach" errors
+              const errorMessage = chrome.runtime.lastError.message || '';
+              if (!errorMessage.includes('No tab id')) {
+                console.warn('Debugger detach error:', chrome.runtime.lastError.message);
+              }
+            }
           }
         }
       }
     } catch (e) {
-      console.warn('Failed to detach debuggers:', e);
+      // Suppress "No tab id to detach" errors
+      const errorMessage = e?.message || String(e);
+      if (!errorMessage.includes('No tab id')) {
+        console.warn('Failed to detach debuggers:', e);
+      }
     }
   };
 
@@ -177,13 +184,12 @@ export function BrowserExtensionPlayground({
       config={{
         showContextPreview,
         layout: 'vertical',
-        showVersionInfo: true,
+        showVersionInfo: false,
         enableScrollToBottom: true,
         showEnvConfigReminder: true,
       }}
       branding={{
         title: 'Playground',
-        version: `${extensionVersion}(SDK v${__SDK_VERSION__})`,
       }}
       className="chrome-extension-playground"
       dryMode={dryMode}
