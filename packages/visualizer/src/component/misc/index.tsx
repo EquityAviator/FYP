@@ -78,7 +78,7 @@ export const errorMessageServerNotReady = (
     <br />
     a. <strong>npx midscene-playground</strong>
     <br />
-    b. <strong>npx --yes @midscene/web</strong>
+    b. <strong>npx --yes @darkpatternhunter/web</strong>
   </span>
 );
 

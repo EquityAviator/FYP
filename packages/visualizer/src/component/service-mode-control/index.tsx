@@ -1,4 +1,4 @@
-import { PlaygroundSDK } from '@midscene/playground';
+import { PlaygroundSDK } from '@darkpatternhunter/playground';
 import { Button, Tooltip } from 'antd';
 import type React from 'react';
 import { useEffect } from 'react';

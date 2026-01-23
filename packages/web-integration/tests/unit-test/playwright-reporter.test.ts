@@ -9,14 +9,14 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import MidsceneReporter from '@/playwright/reporter';
-import * as coreUtils from '@midscene/core/utils';
+import * as coreUtils from '@darkpatternhunter/core/utils';
 import type { TestCase, TestResult } from '@playwright/test/reporter';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const require = createRequire(import.meta.url);
 
 // Mock core utilities to prevent actual file I/O
-vi.mock('@midscene/core/utils', () => ({
+vi.mock('@darkpatternhunter/core/utils', () => ({
   writeDumpReport: vi.fn(),
 }));
 

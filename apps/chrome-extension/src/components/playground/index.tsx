@@ -1,10 +1,10 @@
-import { PlaygroundSDK } from '@midscene/playground';
+import { PlaygroundSDK } from '@darkpatternhunter/playground';
 import {
   UniversalPlayground,
   createStorageProvider,
   detectBestStorageType,
-} from '@midscene/visualizer';
-import { useEnvConfig } from '@midscene/visualizer';
+} from '@darkpatternhunter/visualizer';
+import { useEnvConfig } from '@darkpatternhunter/visualizer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import './index.less';
 

@@ -3,7 +3,7 @@ import type { AbstractInterface } from '@/types';
 import { describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies
-vi.mock('@midscene/core/utils', () => ({
+vi.mock('@darkpatternhunter/core/utils', () => ({
   writeLogFile: vi.fn(() => null),
   reportHTMLContent: vi.fn(() => ''),
   stringifyDumpData: vi.fn(() => '{}'),
@@ -12,13 +12,13 @@ vi.mock('@midscene/core/utils', () => ({
   sleep: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock('@midscene/shared/logger', () => ({
+vi.mock('@darkpatternhunter/shared/logger', () => ({
   getDebug: vi.fn(() => vi.fn()),
   logMsg: vi.fn(),
 }));
 
-vi.mock('@midscene/core', async () => {
-  const actual = await vi.importActual('@midscene/core');
+vi.mock('@darkpatternhunter/core', async () => {
+  const actual = await vi.importActual('@darkpatternhunter/core');
   return {
     ...actual,
     Insight: vi.fn().mockImplementation(() => ({})),

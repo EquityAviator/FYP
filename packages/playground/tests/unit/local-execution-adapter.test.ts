@@ -1,5 +1,5 @@
-import type { DeviceAction } from '@midscene/core';
-import { overrideAIConfig } from '@midscene/shared/env';
+import type { DeviceAction } from '@darkpatternhunter/core';
+import { overrideAIConfig } from '@darkpatternhunter/shared/env';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocalExecutionAdapter } from '../../src/adapters/local-execution';
 import * as common from '../../src/common';
@@ -10,8 +10,8 @@ import type {
 } from '../../src/types';
 
 // Mock dependencies
-vi.mock('@midscene/shared/env');
-vi.mock('@midscene/core/ai-model', () => ({
+vi.mock('@darkpatternhunter/shared/env');
+vi.mock('@darkpatternhunter/core/ai-model', () => ({
   findAllMidsceneLocatorField: vi.fn(() => ['locateField']),
 }));
 
@@ -101,7 +101,7 @@ describe('LocalExecutionAdapter', () => {
     it('should handle params without locate field', async () => {
       // Mock findAllMidsceneLocatorField to return empty array
       const { findAllMidsceneLocatorField } = await import(
-        '@midscene/core/ai-model'
+        '@darkpatternhunter/core/ai-model'
       );
       vi.mocked(findAllMidsceneLocatorField).mockReturnValue([]);
 

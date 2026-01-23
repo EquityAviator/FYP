@@ -2,7 +2,7 @@ import { AIActionType } from '@/ai-model/common';
 import { callAI } from '@/ai-model/service-caller';
 import { localImg2Base64 } from '@/image';
 import type { CodeGenerationChunk } from '@/types';
-import { globalModelConfigManager } from '@midscene/shared/env';
+import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import dotenv from 'dotenv';
 import { getFixture } from 'tests/utils';
 import { beforeAll, describe, expect, it, vi } from 'vitest';

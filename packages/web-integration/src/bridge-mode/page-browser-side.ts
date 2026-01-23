@@ -1,4 +1,4 @@
-import { assert } from '@midscene/shared/utils';
+import { assert } from '@darkpatternhunter/shared/utils';
 import ChromeExtensionProxyPage from '../chrome-extension/page';
 import type {
   ChromePageDestroyOptions,

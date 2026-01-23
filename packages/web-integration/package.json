@@ -1,5 +1,5 @@
 {
-  "name": "@midscene/web",
+  "name": "@darkpatternhunter/web",
   "description": "Automate browser actions, extract data, and perform assertions using AI. It offers JavaScript SDK, Chrome extension, and support for scripting in YAML. See https://midscenejs.com/ for details.",
   "keywords": [
     "AI UI automation",
@@ -114,9 +114,9 @@
   },
   "files": ["static", "dist", "iife-script", "README.md", "bin"],
   "dependencies": {
-    "@midscene/core": "workspace:*",
-    "@midscene/playground": "workspace:*",
-    "@midscene/shared": "workspace:*",
+    "@darkpatternhunter/core": "workspace:*",
+    "@darkpatternhunter/playground": "workspace:*",
+    "@darkpatternhunter/shared": "workspace:*",
     "cors": "^2.8.5",
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",

@@ -4,15 +4,15 @@ import { dirname, join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import type { TUserPrompt } from '@/ai-model';
 import type { ElementCacheFeature } from '@/types';
-import { getMidsceneRunSubDir } from '@midscene/shared/common';
+import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
 import {
   MIDSCENE_CACHE_MAX_FILENAME_LENGTH,
   globalConfigManager,
-} from '@midscene/shared/env';
-import { getDebug } from '@midscene/shared/logger';
-import { ifInBrowser, ifInWorker } from '@midscene/shared/utils';
-import { generateHashId } from '@midscene/shared/utils';
-import { replaceIllegalPathCharsAndSpace } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/env';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { ifInBrowser, ifInWorker } from '@darkpatternhunter/shared/utils';
+import { generateHashId } from '@darkpatternhunter/shared/utils';
+import { replaceIllegalPathCharsAndSpace } from '@darkpatternhunter/shared/utils';
 import yaml from 'js-yaml';
 import semver from 'semver';
 import { getMidsceneVersion } from './utils';

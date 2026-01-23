@@ -1,7 +1,7 @@
 import type { WebPage } from '@/web-element';
 import { WebPageContextParser } from '@/web-element';
-import { Agent as PageAgent } from '@midscene/core/agent';
-import { globalConfigManager } from '@midscene/shared/env';
+import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
+import { globalConfigManager } from '@darkpatternhunter/shared/env';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WebUIContext } from '../../src';
 

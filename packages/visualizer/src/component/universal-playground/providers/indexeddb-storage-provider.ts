@@ -2,7 +2,7 @@ import {
   IndexedDBManager,
   createCleanupFunction,
   withErrorHandling,
-} from '@midscene/shared/baseDB';
+} from '@darkpatternhunter/shared/baseDB';
 import type { InfoListItem, StorageProvider } from '../../../types';
 
 // Database configuration

@@ -8,16 +8,16 @@ import type {
   Rect,
   Size,
 } from '@/types';
-import { assert } from '@midscene/shared/utils';
+import { assert } from '@darkpatternhunter/shared/utils';
 
 import type { ChatCompletionMessageParam } from 'openai/resources/index';
 
 import type { PlanningLocateParam } from '@/types';
-import { NodeType } from '@midscene/shared/constants';
-import type { TVlModeTypes } from '@midscene/shared/env';
-import { treeToList } from '@midscene/shared/extractor';
-import { compositeElementInfoImg } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
+import { NodeType } from '@darkpatternhunter/shared/constants';
+import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
+import { compositeElementInfoImg } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
 import { z } from 'zod';
 
 export type AIArgs = ChatCompletionMessageParam[];

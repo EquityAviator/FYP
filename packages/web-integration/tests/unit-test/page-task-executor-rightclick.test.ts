@@ -1,5 +1,5 @@
-import type { DeviceAction, PlanningAction } from '@midscene/core';
-import { TaskExecutor } from '@midscene/core/agent';
+import type { DeviceAction, PlanningAction } from '@darkpatternhunter/core';
+import { TaskExecutor } from '@darkpatternhunter/core/agent';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock page with mouse operations

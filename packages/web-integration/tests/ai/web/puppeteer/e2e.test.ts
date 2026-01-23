@@ -1,9 +1,9 @@
 import path from 'node:path';
 import { PuppeteerAgent } from '@/puppeteer';
-import { z } from '@midscene/core';
-import { defineAction } from '@midscene/core/device';
-import { sleep } from '@midscene/core/utils';
-import { globalModelConfigManager } from '@midscene/shared/env';
+import { z } from '@darkpatternhunter/core';
+import { defineAction } from '@darkpatternhunter/core/device';
+import { sleep } from '@darkpatternhunter/core/utils';
+import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { launchPage } from './utils';
 

@@ -4,7 +4,7 @@ import type {
   InsightDump,
   PartialInsightDumpFromSDK,
 } from '@/types';
-import { uuid } from '@midscene/shared/utils';
+import { uuid } from '@darkpatternhunter/shared/utils';
 
 export function emitInsightDump(
   data: PartialInsightDumpFromSDK,

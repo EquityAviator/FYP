@@ -4,10 +4,10 @@ import type {
   PlanningAIResponse,
   UIContext,
 } from '@/types';
-import type { IModelConfig } from '@midscene/shared/env';
-import { paddingToMatchBlockByBase64 } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
+import { paddingToMatchBlockByBase64 } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type {
   ChatCompletionContentPart,
   ChatCompletionMessageParam,

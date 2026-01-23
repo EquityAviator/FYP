@@ -1,6 +1,6 @@
 import { PuppeteerWebPage } from '@/puppeteer';
 import { launchPuppeteerPage } from '@/puppeteer/agent-launcher';
-import type { MidsceneYamlScriptWebEnv } from '@midscene/core';
+import type { MidsceneYamlScriptWebEnv } from '@darkpatternhunter/core';
 import type { Viewport } from 'puppeteer';
 
 export async function launchPage(

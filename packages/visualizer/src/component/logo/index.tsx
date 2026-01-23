@@ -10,12 +10,10 @@ export const Logo = ({ hideLogo = false }: { hideLogo?: boolean }) => {
 
   return (
     <div className="logo">
-      <a href="https://midscenejs.com/" target="_blank" rel="noreferrer">
-        <img
-          alt="Midscene_logo"
-          src="https://lf3-static.bytednsdoc.com/obj/eden-cn/vhaeh7vhabf/Midscene.png"
-        />
-      </a>
+      <img
+        alt="Pattern Hunter Logo"
+        src="https://lf3-static.bytednsdoc.com/obj/eden-cn/vhaeh7vhabf/Midscene.png"
+      />
     </div>
   );
 };

@@ -1,140 +1,115 @@
 <p align="center">
-  <img alt="Midscene.js"  width="260" src="https://github.com/user-attachments/assets/f60de3c1-dd6f-4213-97a1-85bf7c6e79e4">
+  <img alt="Dark Pattern Hunter" width="260" src="https://github.com/user-attachments/assets/f60de3c1-dd6f-4213-97a1-85bf7c6e79e4">
 </p>
 
-<h1 align="center">Midscene.js</h1>
+<h1 align="center">Dark Pattern Hunter</h1>
 <div align="center">
 
 English | [简体中文](./README.zh.md)
 
-<a href="https://trendshift.io/repositories/12524" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12524" alt="web-infra-dev%2Fmidscene | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
 </div>
 
 <p align="center">
-  Visual-driven AI Operator for Web, Android, iOS, Automation & Testing. Open-source and MIT licensed.
+  Visual-driven AI operator that hunts, explains, and automates dark patterns across web, Android, and iOS. Open-source and MIT licensed.
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@midscene/web"><img src="https://img.shields.io/npm/v/@midscene/web?style=flat-square&color=00a8f0" alt="npm version" /></a>
-  <a href="https://huggingface.co/ByteDance-Seed/UI-TARS-1.5-7B"><img src="https://img.shields.io/badge/%F0%9F%A4%97-UI%20TARS%20Models-yellow" alt="hugging face model" /></a>
-  <a href="https://npm-compare.com/@midscene/web/#timeRange=THREE_YEARS"><img src="https://img.shields.io/npm/dm/@midscene/web.svg?style=flat-square&color=00a8f0" alt="downloads" /></a>
-  <a href="https://github.com/web-infra-dev/midscene/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square&color=00a8f0" alt="License" />
-  <a href="https://discord.gg/2JyBHxszE4"><img src="https://img.shields.io/discord/1328277792730779648?style=flat-square&color=7289DA&label=Discord&logo=discord&logoColor=white" alt="discord" /></a>
-  <a href="https://x.com/midscene_ai"><img src="https://img.shields.io/twitter/follow/midscene_ai?style=flat-square" alt="twitter" /></a>
-  <a href="https://deepwiki.com/web-infra-dev/midscene">
-    <img alt="Ask DeepWiki.com" src="https://devin.ai/assets/deepwiki-badge.png" style="height: 18px; vertical-align: middle;" />
-  </a>
+  <a href="https://github.com/darkpatternhunter/dark-pattern-hunter" target="_blank"><img src="https://img.shields.io/badge/GitHub-Dark%20Pattern%20Hunter-181717?style=flat-square" alt="GitHub" /></a>
+  <a href="https://img.shields.io/badge/License-MIT-blue?style=flat-square"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License" /></a>
 </p>
 
 ## Showcases
 
-| Instruction  | Video |
-| :---:  | :---: |
-| Use JS code to drive task orchestration, collect information about Jay Chou's concert, and write it into Google Docs (By UI-TARS model)   | <video src="https://github.com/user-attachments/assets/75474138-f51f-4c54-b3cf-46d61d059999" height="300" />        |
-| Control Maps App on Android (By Qwen-2.5-VL model)   | <video src="https://github.com/user-attachments/assets/1f5bab0e-4c28-44e1-b378-a38809b05a00" height="300" />        |
-| Using midscene mcp to browse the page (https://www.saucedemo.com/), perform login, add products, place orders, and finally generate test cases based on mcp execution steps and playwright example | <video src="https://github.com/user-attachments/assets/a95ca353-e50c-4091-85ba-e542f576b6be" height="300" />   |
+| Instruction | Video |
+| :---: | :---: |
+| Use JavaScript to orchestrate a dark pattern review, capture the manipulative funnel, and write the findings into Google Docs | <video src="https://github.com/user-attachments/assets/75474138-f51f-4c54-b3cf-46d61d059999" height="300" /> |
+| Control a Maps App on Android to sample each step and surface deceptive navigation cues | <video src="https://github.com/user-attachments/assets/1f5bab0e-4c28-44e1-b378-a38809b05a00" height="300" /> |
+| Use the browser extension to replay a checkout flow, log dark pattern cues, and generate reproducible tests | <video src="https://github.com/user-attachments/assets/5cab578d-feb3-4250-8c7e-6793fe38a5be" height="300" /> |
 
 ## 💡 Features
 
-### Write Automation with Natural Language
-- Describe your goals and steps, and Midscene will plan and operate the user interface for you.
-- Use Javascript SDK or YAML to write your automation script.
+### Detect & Explain Dark Patterns
+- Scan UI flows with visual models and highlight manipulative affordances before you commit to automation.
+- Log the UI evidence together with the rationale that flagged a dark pattern so analysts can respond quickly.
+- Blend heuristic rules with LLM context to surface forced actions, confusing copy, and manipulative nudges.
 
-### Web & Mobile App & Any Interface
-- **Web Automation 🖥️**: Either integrate with [Puppeteer](https://midscenejs.com/integrate-with-puppeteer.html), [Playwright](https://midscenejs.com/integrate-with-playwright.html) or use [Bridge Mode](https://midscenejs.com/bridge-mode-by-chrome-extension.html) to control your desktop browser.
-- **Android Automation 📱**: Use [Javascript SDK](https://midscenejs.com/integrate-with-android.html) with adb to control your local Android device.
-- **iOS Automation 🍎**: Use [Javascript SDK](https://midscenejs.com/integrate-with-ios.html) with iOS Simulator to control your local iOS devices and simulators.
-- **Any Interface Automation 🌐**: Use [Javascript SDK](https://midscenejs.com/integrate-with-any-interface.html) to control your own interface.
+### Web, Mobile & Any Interface
+- **Web Automation**: Bridge browsers via the Chrome Extension or Puppeteer/Playwright integration and inspect DOM state with visual context.
+- **Android Automation**: Pair the JavaScript SDK with adb, sample native app steps, and monitor for deceptive affordances.
+- **iOS Automation**: Use the same SDK with iOS simulators to trace the UI, capture annotated screenshots, and replay steps.
+- **Any Interface Automation**: Drive custom surfaces with annotated snapshots instead of brittle selectors.
 
 ### Tools
-- **Visual Reports for Debugging 🎞️**: Through our test reports and Playground, you can easily understand, replay and debug the entire process.
-- [**Caching for Efficiency 🔄**](https://midscenejs.com/caching.html): Replay your script with cache and get the result faster.
-- **MCP**: Allows other MCP Clients to directly use Midscene's capabilities. [**Web MCP**](https://midscenejs.com/web-mcp.html) [**Android MCP**](https://midscenejs.com/mcp-android.html)
+- **Visual Reports for Review**: Replay every step, compare before/after frames, and export annotated sequences for compliance teams.
+- **Caching for Efficiency**: Replay historical sessions with cached frames to speed up regression checks.
+- **MCP Bridge**: Allow other clients to tap into the agent stack via web, Android, or desktop bridges.
 
 ### Three kinds of APIs
-- [Interaction API 🔗](https://midscenejs.com/api.html#interaction-methods): interact with the user interface.
-- [Data Extraction API 🔗](https://midscenejs.com/api.html#data-extraction): extract data from the user interface and dom.
-- [Utility API 🔗](https://midscenejs.com/api.html#more-apis): utility functions like `aiAssert()`, `aiLocate()`, `aiWaitFor()`.
+- [Interaction API](https://darkpatternhunter.dev/api#interaction-methods): simulate clicks, drags, and gestures across devices.
+- [Data Extraction API](https://darkpatternhunter.dev/api#data-extraction): capture structured UI attributes and annotate why a field was suspicious.
+- [Utility API](https://darkpatternhunter.dev/api#utility-methods): helpers such as `aiAssert()`, `aiLocate()`, and `aiWaitFor()` plus diagnostics.
 
 ## 👉 Zero-code Quick Experience
 
-- **[Chrome Extension](https://midscenejs.com/quick-experience.html)**: Start in-browser experience immediately through [the Chrome Extension](https://midscenejs.com/quick-experience.html), without writing any code.
-- **[Android Playground](https://midscenejs.com/quick-experience-with-android.html)**: There is also a built-in Android playground to control your local Android device.
-- **[iOS Playground](https://midscenejs.com/quick-experience-with-ios.html)**: There is also a built-in iOS playground to control your local iOS device.
+- **Chrome Extension**: Launch the extension to flag manipulative steps in-browser without writing code.
+- **Android Playground**: Mirror your device, explore app flows, and highlight dark pattern risks as they happen.
+- **iOS Playground**: Run local iOS scenes, capture reasoning logs, and share them with your compliance team.
 
-## ✨ Driven by Visual Language Model
+## ✨ Driven by Visual Language Models
 
-Midscene.js supports visual-language models like `Qwen3-VL`, `Doubao-1.6-vision`, `gemini-2.5-pro` and `UI-TARS`. 
+Dark Pattern Hunter partners with models such as `Qwen3-VL`, `Doubao-1.6-vision`, `gemini-2.5-pro`, and `UI-TARS`. These models reason from screenshots and metadata to surface subtle UI tricks.
 
-* Capable of finding and understanding the target element on the page by just providing the screenshot.
-* No dom or semantic markups are required.
-* Less tokens and money cost compared to generalLLM models.
-* Support open-source models.
+- Locate targets purely from pixels or annotated regions.
+- Avoid brittle DOM selectors and reduce costs compared to generic LLM calls.
+- Keep your open-source model collection in sync with the automation pipeline.
 
-Read more about [Choose a model](https://midscenejs.com/choose-a-model)
+Read more in [Choose a Model](https://darkpatternhunter.dev/choose-a-model).
 
 ## 💡 Two Styles of Automation
 
 ### Auto Planning
 
-Midscene will automatically plan the steps and execute them. It may be slower and heavily rely on the quality of the AI model.
+Dark Pattern Hunter automatically plans steps while tracking whether any action touches a dark pattern hotspot. This style is slower but surfaces explainable reasoning for each decision.
 
 ```javascript
-await aiAction('click all the records one by one. If one record contains the text "completed", skip it');
+await aiAction('check if the checkout page hides the unsubscribe link. If it does, report it and skip the tap.');
 ```
 
 ### Workflow Style
 
-Split complex logic into multiple steps to improve the stability of the automation code.
+Split complex logic into smaller steps for stability and easier review.
 
 ```javascript
-const recordList = await agent.aiQuery('string[], the record list')
+const recordList = await agent.aiQuery('string[], the record list');
 for (const record of recordList) {
-  const hasCompleted = await agent.aiBoolean(`check if the record ${record}" contains the text "completed"`)
+  const hasCompleted = await agent.aiBoolean(`check if the record ${record} contains the text "completed"`);
   if (!hasCompleted) {
-    await agent.aiTap(record)
+    await agent.aiTap(record);
   }
 }
 ```
 
-> For more details about the workflow style, please refer to [Blog - Use JavaScript to Optimize the AI Automation Code](https://midscenejs.com/blog-programming-practice-using-structured-api.html)
+> For structured automation best practices, see [Blog - Structured AI Automation Workflows](https://darkpatternhunter.dev/blog/structured-workflows).
 
 ## 👀 Comparing to other projects
 
-There are so many UI automation tools out there, and each one seems to be all-powerful. What's special about Midscene.js?
+- **Visual-first detection**: Dark Pattern Hunter reasons about what users actually see, not only DOM state.
+- **Audit-ready reporting**: Every automation emits annotated recordings that compliance teams can consume.
+- **Fairness focus**: Detect manipulative nudges, forced continuity, and other dark patterns while automating flows.
+- **JavaScript friendly**: The platform exposes natural JavaScript interfaces for automation and reporting.
 
-* **Visual-driven brings reliability and efficiency**: By using visual-language models, Midscene.js is suitable for both web and mobile app automation, no matter the technology stack the interface is built with.
+## 📄 Resources
 
-* **Debugging Experience**: You will soon realize that debugging and maintaining automation scripts is the real challenge. Midscene.js offers a visualized report file, a built-in playground, and a Chrome Extension to simplify the debugging process. These are the tools most developers truly need.
-
-* **Open Source, Free, Deploy as you want**: Midscene.js is an open-source project, and it supports self-hosted models.
-
-* **Integrate with Javascript**: You can always bet on Javascript 😎
-
-## 📄 Resources 
-
-* Home Page and Documentation: [https://midscenejs.com](https://midscenejs.com/)
-* Sample Projects: [https://github.com/web-infra-dev/midscene-example](https://github.com/web-infra-dev/midscene-example)
-* API Reference: [https://midscenejs.com/api.html](https://midscenejs.com/api.html)
-* GitHub: [https://github.com/web-infra-dev/midscene](https://github.com/web-infra-dev/midscene)
+- Official Site and Docs: [https://darkpatternhunter.dev](https://darkpatternhunter.dev)
+- Sample Projects: [https://github.com/darkpatternhunter/example](https://github.com/darkpatternhunter/example)
+- API Reference: [https://darkpatternhunter.dev/api](https://darkpatternhunter.dev/api)
+- GitHub: [https://github.com/darkpatternhunter/dark-pattern-hunter](https://github.com/darkpatternhunter/dark-pattern-hunter)
 
 ## 🤝 Community
 
-* [Discord](https://discord.gg/2JyBHxszE4)
-* [Follow us on X](https://x.com/midscene_ai)
-* [Lark Group(飞书交流群)](https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=291q2b25-e913-411a-8c51-191e59aab14d)
-
-## 🌟 Awesome Midscene
-
-Community projects that extend Midscene.js capabilities:
-
-* [midscene-ios](https://github.com/lhuanyu/midscene-ios) - iOS automation support for Midscene
-* [midscene-pc](https://github.com/Mofangbao/midscene-pc) - PC operation device for Windows, macOS, and Linux
-* [midscene-pc-docker](https://github.com/Mofangbao/midscene-pc-docker) - Docker container image with MidScene-PC server pre-installed
-* [Midscene-Python](https://github.com/Python51888/Midscene-Python) - Python SDK for Midscene automation
-* [midscene-java](https://github.com/Master-Frank/midscene-java) - Java SDK that brings Midscene automation features to JVM projects
-
+- [Discord](https://discord.gg/2JyBHxszE4)
+- [Follow us on X](https://x.com/darkpatternhunter)
+- [Lark Group(飞书交流群)](https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=291q2b25-e913-411a-8c51-191e59aab14d)
 
 ## 📝 Credits
 
@@ -152,26 +127,26 @@ We would like to thank the following projects:
 
 ## 📖 Citation
 
-If you use Midscene.js in your research or project, please cite:
+If you use Dark Pattern Hunter in your research or project, please cite:
 
 ```bibtex
-@software{Midscene.js,
+@software{DarkPatternHunter,
   author = {Xiao Zhou, Tao Yu, YiBing Lin},
-  title = {Midscene.js: Your AI Operator for Web, Android, iOS, Automation & Testing.},
+  title = {Dark Pattern Hunter: AI-first automation to hunt dark patterns on web, Android, and iOS.},
   year = {2025},
   publisher = {GitHub},
-  url = {https://github.com/web-infra-dev/midscene}
+  url = {https://github.com/darkpatternhunter/dark-pattern-hunter}
 }
 ```
 
 ## ✨ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=web-infra-dev/midscene&type=Date)](https://www.star-history.com/#web-infra-dev/midscene&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=darkpatternhunter/dark-pattern-hunter&type=Date)](https://www.star-history.com/#darkpatternhunter/dark-pattern-hunter&Date)
 
 
 ## 📝 License
 
-Midscene.js is [MIT licensed](https://github.com/web-infra-dev/midscene/blob/main/LICENSE).
+Dark Pattern Hunter is [MIT licensed](https://github.com/darkpatternhunter/dark-pattern-hunter/blob/main/LICENSE).
 
 ---
 

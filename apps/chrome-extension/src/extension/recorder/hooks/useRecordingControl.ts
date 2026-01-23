@@ -1,5 +1,5 @@
-import type { ChromeRecordedEvent } from '@midscene/recorder';
-import { globalModelConfigManager } from '@midscene/shared/env';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
+import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { message } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type RecordingSession, useRecordStore } from '../../../store';

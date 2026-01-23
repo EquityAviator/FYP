@@ -1,5 +1,5 @@
-import type { DeviceAction, Point, UIContext } from '@midscene/core';
-import type { AbstractInterface } from '@midscene/core/device';
+import type { DeviceAction, Point, UIContext } from '@darkpatternhunter/core';
+import type { AbstractInterface } from '@darkpatternhunter/core/device';
 import {
   defineActionDragAndDrop,
   defineActionHover,
@@ -8,8 +8,8 @@ import {
   defineActionRightClick,
   defineActionScroll,
   defineActionTap,
-} from '@midscene/core/device';
-import { ERROR_CODE_NOT_IMPLEMENTED_AS_DESIGNED } from '@midscene/shared/common';
+} from '@darkpatternhunter/core/device';
+import { ERROR_CODE_NOT_IMPLEMENTED_AS_DESIGNED } from '@darkpatternhunter/shared/common';
 
 type WebUIContext = UIContext & {
   screenshotBase64?: string;

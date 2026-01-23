@@ -1,13 +1,13 @@
-// import { generatePlaywrightTest as coreGeneratePlaywrightTest } from '@midscene/core/ai-model';
-import type { ChromeRecordedEvent } from '@midscene/recorder';
+// import { generatePlaywrightTest as coreGeneratePlaywrightTest } from '@darkpatternhunter/core/ai-model';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
 
 import type {
   StreamingAIResponse,
   StreamingCodeGenerationOptions,
-} from '@midscene/core';
+} from '@darkpatternhunter/core';
 // Note: Streaming support will be added once the core package exports are updated
-import { generatePlaywrightTestStream as coreGeneratePlaywrightTestStream } from '@midscene/core/ai-model';
-import type { IModelConfig } from '@midscene/shared/env';
+import { generatePlaywrightTestStream as coreGeneratePlaywrightTestStream } from '@darkpatternhunter/core/ai-model';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import { recordLogger } from '../logger';
 import { handleTestGenerationError } from './shared/testGenerationUtils';
 

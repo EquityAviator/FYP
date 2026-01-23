@@ -1,13 +1,13 @@
 'use client';
 import 'pixi.js/unsafe-eval';
-import type { BaseElement, Rect, UIContext } from '@midscene/core';
+import type { BaseElement, Rect, UIContext } from '@darkpatternhunter/core';
 import { Checkbox } from 'antd';
 import type { CheckboxProps } from 'antd';
 import * as PIXI from 'pixi.js';
 import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { colorForName, highlightColorForType } from '../../utils/color';
 import './index.less';
-import { treeToList } from '@midscene/shared/extractor';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
 import { DropShadowFilter } from 'pixi-filters';
 import { useBlackboardPreference } from '../../store/store';
 

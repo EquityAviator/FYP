@@ -1,4 +1,4 @@
-import { PlaygroundSDK } from '@midscene/playground';
+import { PlaygroundSDK } from '@darkpatternhunter/playground';
 import { useEffect, useState } from 'react';
 import { useEnvConfig } from '../store/store';
 

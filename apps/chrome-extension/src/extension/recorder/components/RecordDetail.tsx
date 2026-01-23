@@ -8,7 +8,7 @@ import {
   PlayCircleOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import { RecordTimeline } from '@midscene/recorder';
+import { RecordTimeline } from '@darkpatternhunter/recorder';
 import { Alert, Button, Empty, Spin } from 'antd';
 import type React from 'react';
 import { useEffect, useState } from 'react';

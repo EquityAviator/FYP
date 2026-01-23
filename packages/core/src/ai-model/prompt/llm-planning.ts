@@ -1,5 +1,5 @@
 import type { DeviceAction } from '@/types';
-import type { TVlModeTypes } from '@midscene/shared/env';
+import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
 import type { ResponseFormatJSONSchema } from 'openai/resources/index';
 import type { ZodObject, z } from 'zod';
 import { ifMidsceneLocatorField } from '../common';

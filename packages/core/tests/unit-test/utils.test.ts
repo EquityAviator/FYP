@@ -19,8 +19,8 @@ import {
   safeParseJson,
 } from '@/ai-model/service-caller';
 import { type DeviceAction, getMidsceneLocationSchema } from '@/index';
-import { getMidsceneRunSubDir } from '@midscene/shared/common';
-import { uuid } from '@midscene/shared/utils';
+import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
+import { uuid } from '@darkpatternhunter/shared/utils';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 // @ts-ignore no types in es folder

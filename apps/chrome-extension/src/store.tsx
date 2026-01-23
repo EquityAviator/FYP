@@ -1,4 +1,4 @@
-import type { ChromeRecordedEvent } from '@midscene/recorder';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
 // import { createStore } from 'zustand/vanilla';
 import * as Z from 'zustand';
 import { recordLogger } from './extension/recorder/logger';

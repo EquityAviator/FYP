@@ -1,5 +1,5 @@
 import { CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-import { ShinyText } from '@midscene/visualizer';
+import { ShinyText } from '@darkpatternhunter/visualizer';
 import { Progress, Typography } from 'antd';
 import type React from 'react';
 import type { ProgressStep } from '../ProgressModal';

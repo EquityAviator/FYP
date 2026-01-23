@@ -1,4 +1,4 @@
-import type { DeviceAction, UIContext } from '@midscene/core';
+import type { DeviceAction, UIContext } from '@darkpatternhunter/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createStorageProvider,

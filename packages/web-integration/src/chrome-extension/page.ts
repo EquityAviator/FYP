@@ -6,12 +6,12 @@
 */
 
 import { limitOpenNewTabScript } from '@/web-element';
-import type { ElementTreeNode, Point, Size, UIContext } from '@midscene/core';
-import type { AbstractInterface, DeviceAction } from '@midscene/core/device';
-import type { ElementInfo } from '@midscene/shared/extractor';
-import { treeToList } from '@midscene/shared/extractor';
-import { createImgBase64ByFormat } from '@midscene/shared/img';
-import { assert } from '@midscene/shared/utils';
+import type { ElementTreeNode, Point, Size, UIContext } from '@darkpatternhunter/core';
+import type { AbstractInterface, DeviceAction } from '@darkpatternhunter/core/device';
+import type { ElementInfo } from '@darkpatternhunter/shared/extractor';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
+import { createImgBase64ByFormat } from '@darkpatternhunter/shared/img';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type { Protocol as CDPTypes } from 'devtools-protocol';
 import { WebPageContextParser } from '../web-element';
 import {

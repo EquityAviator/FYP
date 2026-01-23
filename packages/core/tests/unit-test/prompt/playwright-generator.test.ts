@@ -1,4 +1,4 @@
-import type { IModelConfig } from '@midscene/shared/env';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { AIActionType, callAIWithStringResponse } from '../../../src/ai-model';
 import {
@@ -246,8 +246,8 @@ describe('playwright-generator', () => {
 
   describe('generatePlaywrightTest', () => {
     const mockPlaywrightCode = `import { test as base } from '@playwright/test';
-import type { PlayWrightAiFixtureType } from '@midscene/web/playwright';
-import { PlaywrightAiFixture } from '@midscene/web/playwright';
+import type { PlayWrightAiFixtureType } from '@darkpatternhunter/web/playwright';
+import { PlaywrightAiFixture } from '@darkpatternhunter/web/playwright';
 
 const test = base.extend<PlayWrightAiFixtureType>(PlaywrightAiFixture({
   waitForNetworkIdleTimeout: 2000,

@@ -1,6 +1,6 @@
-# @midscene/playground Tests
+# @darkpatternhunter/playground Tests
 
-This directory contains the test suite for the `@midscene/playground` package.
+This directory contains the test suite for the `@darkpatternhunter/playground` package.
 
 ## Test Structure
 

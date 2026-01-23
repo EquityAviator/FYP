@@ -126,7 +126,7 @@ Bridge mode allows controlling the browser from a local terminal via the Midscen
 ### Common Issues
 
 1. **Report template generation failure**
-   - Make sure to build the `@midscene/visualizer` package first
+   - Make sure to build the `@darkpatternhunter/visualizer` package first
    - Check if `packages/visualizer/dist/report/index.html` exists
 
 2. **React Hooks errors**

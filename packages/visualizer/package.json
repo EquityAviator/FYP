@@ -1,5 +1,5 @@
 {
-  "name": "@midscene/visualizer",
+  "name": "@darkpatternhunter/visualizer",
   "version": "0.30.8",
   "repository": "https://github.com/web-infra-dev/midscene",
   "homepage": "https://midscenejs.com/",
@@ -62,10 +62,10 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.1",
-    "@midscene/core": "workspace:*",
-    "@midscene/playground": "workspace:*",
-    "@midscene/shared": "workspace:*",
-    "@midscene/web": "workspace:*",
+    "@darkpatternhunter/core": "workspace:*",
+    "@darkpatternhunter/playground": "workspace:*",
+    "@darkpatternhunter/shared": "workspace:*",
+    "@darkpatternhunter/web": "workspace:*",
     "antd": "^5.21.6",
     "buffer": "6.0.3",
     "dayjs": "^1.11.11"

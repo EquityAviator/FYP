@@ -10,8 +10,8 @@ import {
   ExportOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
-import type { BaseElement, LocateResultElement, Rect } from '@midscene/core';
-import { treeToList } from '@midscene/shared/extractor';
+import type { BaseElement, LocateResultElement, Rect } from '@darkpatternhunter/core';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
 import { Dropdown, Spin, Switch, Tooltip } from 'antd';
 import GlobalPerspectiveIcon from '../../icons/global-perspective.svg';
 import PlayerSettingIcon from '../../icons/player-setting.svg';

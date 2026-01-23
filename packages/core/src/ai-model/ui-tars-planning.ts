@@ -4,11 +4,11 @@ import type {
   Size,
   UIContext,
 } from '@/types';
-import { type IModelConfig, UITarsModelVersion } from '@midscene/shared/env';
-import { resizeImgBase64 } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { transformHotkeyInput } from '@midscene/shared/us-keyboard-layout';
-import { assert } from '@midscene/shared/utils';
+import { type IModelConfig, UITarsModelVersion } from '@darkpatternhunter/shared/env';
+import { resizeImgBase64 } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { transformHotkeyInput } from '@darkpatternhunter/shared/us-keyboard-layout';
+import { assert } from '@darkpatternhunter/shared/utils';
 import { actionParser } from '@ui-tars/action-parser';
 import { AIActionType } from './common';
 import type { ConversationHistory } from './conversation-history';

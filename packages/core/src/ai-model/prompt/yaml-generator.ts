@@ -2,8 +2,8 @@ import type {
   StreamingAIResponse,
   StreamingCodeGenerationOptions,
 } from '@/types';
-import { YAML_EXAMPLE_CODE } from '@midscene/shared/constants';
-import type { IModelConfig } from '@midscene/shared/env';
+import { YAML_EXAMPLE_CODE } from '@darkpatternhunter/shared/constants';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import {
   AIActionType,
   type ChatCompletionMessageParam,

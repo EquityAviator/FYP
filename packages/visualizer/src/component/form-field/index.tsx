@@ -1,4 +1,4 @@
-import type { z } from '@midscene/core';
+import type { z } from '@darkpatternhunter/core';
 import { Form, Input, InputNumber, Select } from 'antd';
 import type React from 'react';
 import type { ZodRuntimeAccess } from '../../types';

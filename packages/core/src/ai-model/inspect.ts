@@ -11,14 +11,14 @@ import type {
   ReferenceImage,
   UIContext,
 } from '@/types';
-import type { IModelConfig } from '@midscene/shared/env';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import {
   cropByRect,
   paddingToMatchBlockByBase64,
   preProcessImageUrl,
-} from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type {
   ChatCompletionSystemMessageParam,
   ChatCompletionUserMessageParam,

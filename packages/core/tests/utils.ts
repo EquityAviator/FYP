@@ -4,7 +4,7 @@ import type { callAIWithObjectResponse } from '@/ai-model/service-caller/index';
 import { localImg2Base64 } from '@/image';
 import Insight from '@/insight';
 import type { AIElementLocatorResponse, BaseElement, UIContext } from '@/types';
-import { NodeType } from '@midscene/shared/constants';
+import { NodeType } from '@darkpatternhunter/shared/constants';
 import { vi } from 'vitest';
 
 export function getFixture(name: string) {

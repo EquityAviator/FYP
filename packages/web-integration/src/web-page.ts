@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import type { Point } from '@midscene/core';
+import type { Point } from '@darkpatternhunter/core';
 import {
   AbstractInterface,
   type DeviceAction,
@@ -14,12 +14,12 @@ import {
   defineActionScroll,
   defineActionSwipe,
   defineActionTap,
-} from '@midscene/core/device';
+} from '@darkpatternhunter/core/device';
 
-import { sleep } from '@midscene/core/utils';
-import type { ElementInfo } from '@midscene/shared/extractor';
-import { getDebug } from '@midscene/shared/logger';
-import { transformHotkeyInput } from '@midscene/shared/us-keyboard-layout';
+import { sleep } from '@darkpatternhunter/core/utils';
+import type { ElementInfo } from '@darkpatternhunter/shared/extractor';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { transformHotkeyInput } from '@darkpatternhunter/shared/us-keyboard-layout';
 
 const debug = getDebug('web:page');
 

@@ -1,6 +1,6 @@
 import type { WebPageAgentOpt } from '@/web-element';
-import { Agent as PageAgent } from '@midscene/core/agent';
-import { getDebug } from '@midscene/shared/logger';
+import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
+import { getDebug } from '@darkpatternhunter/shared/logger';
 import type { Page as PuppeteerPage } from 'puppeteer';
 import { forceClosePopup } from './base-page';
 import { PuppeteerWebPage } from './page';
@@ -22,7 +22,7 @@ export class PuppeteerAgent extends PageAgent<PuppeteerWebPage> {
   }
 }
 
-export { overrideAIConfig } from '@midscene/shared/env';
+export { overrideAIConfig } from '@darkpatternhunter/shared/env';
 
 // Do NOT export this since it requires puppeteer
 // export { puppeteerAgentForTarget } from './agent-launcher';

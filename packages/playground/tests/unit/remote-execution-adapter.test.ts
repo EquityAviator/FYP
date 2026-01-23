@@ -1,4 +1,4 @@
-import type { DeviceAction } from '@midscene/core';
+import type { DeviceAction } from '@darkpatternhunter/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RemoteExecutionAdapter } from '../../src/adapters/remote-execution';
 import type { ExecutionOptions, FormValue } from '../../src/types';
@@ -8,7 +8,7 @@ const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
 // Mock PLAYGROUND_SERVER_PORT
-vi.mock('@midscene/shared/constants', () => ({
+vi.mock('@darkpatternhunter/shared/constants', () => ({
   PLAYGROUND_SERVER_PORT: 3000,
 }));
 

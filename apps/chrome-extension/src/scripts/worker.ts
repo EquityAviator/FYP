@@ -1,7 +1,7 @@
 /// <reference types="chrome" />
 
-import { uuid } from '@midscene/shared/utils';
-import type { WebUIContext } from '@midscene/web';
+import { uuid } from '@darkpatternhunter/shared/utils';
+import type { WebUIContext } from '@darkpatternhunter/web';
 
 const workerMessageTypes = {
   SAVE_CONTEXT: 'save-context',
@@ -68,6 +68,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse(null);
       return true;
     }
+  }
+
+  // Handle dataset export download
+  if (request.action === 'downloadDataset') {
+    const { data, filename } = request;
+    if (!data || !filename) {
+      sendResponse({ success: false, error: 'Missing data or filename' });
+      return true;
+    }
+
+    try {
+      // Convert string data to blob URL (pretty JSON array)
+      const blob = new Blob([data], { type: 'application/json' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Use Chrome Downloads API
+      chrome.downloads.download(
+        {
+          url: blobUrl,
+          filename: filename,
+          saveAs: true,
+        },
+        (downloadId) => {
+          // Clean up blob URL after a short delay
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+          if (chrome.runtime.lastError) {
+            console.error(
+              '[ServiceWorker] Download error:',
+              chrome.runtime.lastError,
+            );
+            sendResponse({
+              success: false,
+              error: chrome.runtime.lastError.message,
+            });
+          } else {
+            sendResponse({ success: true, downloadId });
+          }
+        },
+      );
+    } catch (error) {
+      console.error('[ServiceWorker] Failed to create download:', error);
+      sendResponse({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+    return true; // Keep the message channel open for async response
   }
 
   // Forward recording events to connected extension pages

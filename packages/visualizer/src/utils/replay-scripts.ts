@@ -1,6 +1,6 @@
 'use client';
 import { mousePointer } from '@/utils';
-import { paramStr, typeStr } from '@midscene/core/agent';
+import { paramStr, typeStr } from '@darkpatternhunter/core/agent';
 
 import type {
   ExecutionDump,
@@ -11,8 +11,8 @@ import type {
   LocateResultElement,
   Rect,
   UIContext,
-} from '@midscene/core';
-import { treeToList } from '@midscene/shared/extractor';
+} from '@darkpatternhunter/core';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
 
 export interface CameraState {
   left: number;

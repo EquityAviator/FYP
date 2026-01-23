@@ -1,13 +1,13 @@
 import type {
   StreamingAIResponse,
   StreamingCodeGenerationOptions,
-} from '@midscene/core';
+} from '@darkpatternhunter/core';
 import {
   generateYamlTest as generateYamlTestCore,
   generateYamlTestStream as generateYamlTestStreamCore,
-} from '@midscene/core/ai-model';
-import type { ChromeRecordedEvent } from '@midscene/recorder';
-import type { IModelConfig } from '@midscene/shared/env';
+} from '@darkpatternhunter/core/ai-model';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import { recordLogger } from '../logger';
 import { extractNavigationAndViewportInfo } from './playwrightGenerator';
 import { handleTestGenerationError } from './shared/testGenerationUtils';

@@ -6,4 +6,4 @@ export {
   resizeAndConvertImgBuffer,
   saveBase64Image,
   zoomForGPT4o,
-} from '@midscene/shared/img';
+} from '@darkpatternhunter/shared/img';

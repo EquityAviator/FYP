@@ -3,16 +3,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PlaywrightAgent, type PlaywrightWebPage } from '@/playwright/index';
 import type { WebPageAgentOpt } from '@/web-element';
-import type { Cache } from '@midscene/core';
-import type { AgentOpt, Agent as PageAgent } from '@midscene/core/agent';
-import { processCacheConfig } from '@midscene/core/utils';
+import type { Cache } from '@darkpatternhunter/core';
+import type { AgentOpt, Agent as PageAgent } from '@darkpatternhunter/core/agent';
+import { processCacheConfig } from '@darkpatternhunter/core/utils';
 import {
   DEFAULT_WAIT_FOR_NAVIGATION_TIMEOUT,
   DEFAULT_WAIT_FOR_NETWORK_IDLE_TIMEOUT,
-} from '@midscene/shared/constants';
-import { getDebug } from '@midscene/shared/logger';
-import { uuid } from '@midscene/shared/utils';
-import { replaceIllegalPathCharsAndSpace } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/constants';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { uuid } from '@darkpatternhunter/shared/utils';
+import { replaceIllegalPathCharsAndSpace } from '@darkpatternhunter/shared/utils';
 import { type TestInfo, type TestType, test } from '@playwright/test';
 import type { Page as OriginPlaywrightPage } from 'playwright';
 export type APITestType = Pick<TestType<any, any>, 'step'>;

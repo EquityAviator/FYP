@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { getMidsceneRunSubDir } from '@midscene/shared/common';
+import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
 import { getReportFileName } from './agent';
 import type { ReportFileWithAttributes } from './types';
 import { getReportTpl, reportHTMLContent } from './utils';

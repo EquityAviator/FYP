@@ -1,4 +1,4 @@
-import { getPreferredLanguage } from '@midscene/shared/env';
+import { getPreferredLanguage } from '@darkpatternhunter/shared/env';
 
 export const elementDescriberInstruction = () => {
   return `

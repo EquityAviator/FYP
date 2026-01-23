@@ -1,6 +1,6 @@
-import type { DeviceAction } from '@midscene/core';
-import { overrideAIConfig } from '@midscene/shared/env';
-import { uuid } from '@midscene/shared/utils';
+import type { DeviceAction } from '@darkpatternhunter/core';
+import { overrideAIConfig } from '@darkpatternhunter/shared/env';
+import { uuid } from '@darkpatternhunter/shared/utils';
 import { executeAction, parseStructuredParams } from '../common';
 import type { ExecutionOptions, FormValue, PlaygroundAgent } from '../types';
 import { BasePlaygroundAdapter } from './base';

@@ -1,4 +1,4 @@
-import type { UIContext } from '@midscene/core';
+import type { UIContext } from '@darkpatternhunter/core';
 import type { ContextProvider } from '../../../types';
 
 /**

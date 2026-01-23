@@ -25,10 +25,10 @@ import {
   type IModelConfig,
   MIDSCENE_FORCE_DEEP_THINK,
   globalConfigManager,
-} from '@midscene/shared/env';
-import { compositeElementInfoImg, cropByRect } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/env';
+import { compositeElementInfoImg, cropByRect } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type { TMultimodalPrompt } from '../ai-model/common';
 import { emitInsightDump } from './utils';
 

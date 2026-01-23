@@ -42,9 +42,9 @@ import {
   type IModelConfig,
   MIDSCENE_REPLANNING_CYCLE_LIMIT,
   globalConfigManager,
-} from '@midscene/shared/env';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/env';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type { TaskCache } from './task-cache';
 import { taskTitleStr } from './ui-utils';
 import {

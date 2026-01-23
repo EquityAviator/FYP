@@ -1,5 +1,5 @@
 import os from 'node:os';
-import { PuppeteerAgent } from '@midscene/web/puppeteer';
+import { PuppeteerAgent } from '@darkpatternhunter/web/puppeteer';
 import puppeteer from 'puppeteer';
 import 'dotenv/config'; // read environment variables from .env file
 

@@ -6,20 +6,20 @@ import * as path from 'node:path';
 import {
   defaultRunDirName,
   getMidsceneRunSubDir,
-} from '@midscene/shared/common';
+} from '@darkpatternhunter/shared/common';
 import {
   MIDSCENE_CACHE,
   MIDSCENE_DEBUG_MODE,
   globalConfigManager,
-} from '@midscene/shared/env';
-import { getRunningPkgInfo } from '@midscene/shared/node';
-import { assert, logMsg } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/env';
+import { getRunningPkgInfo } from '@darkpatternhunter/shared/node';
+import { assert, logMsg } from '@darkpatternhunter/shared/utils';
 import {
   escapeScriptTag,
   ifInBrowser,
   ifInWorker,
   uuid,
-} from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/utils';
 import type { Cache, Rect, ReportDumpWithAttributes } from './types';
 
 let logEnvReady = false;

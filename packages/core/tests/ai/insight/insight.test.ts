@@ -4,7 +4,7 @@ import { sleep } from '@/utils';
 import {
   globalConfigManager,
   globalModelConfigManager,
-} from '@midscene/shared/env';
+} from '@darkpatternhunter/shared/env';
 import { getContextFromFixture } from 'tests/evaluation';
 import { beforeAll, describe, expect, test, vi } from 'vitest';
 

@@ -1,4 +1,4 @@
-import { treeToList } from '@midscene/shared/extractor';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
 import { getContextFromFixture } from 'tests/evaluation';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -9,7 +9,7 @@ import {
   elementByPositionWithElementInfo,
 } from '@/ai-model/prompt/util';
 import type { GroupedActionDump } from '@/types';
-import type { TVlModeTypes } from '@midscene/shared/env';
+import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
 
 describe('prompt utils - describeUserPage', () => {
   let lengthOfDescription: number;

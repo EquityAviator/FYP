@@ -1,5 +1,5 @@
 import { createServer } from 'node:net';
-import { playgroundForAgent } from '@midscene/playground';
+import { playgroundForAgent } from '@darkpatternhunter/playground';
 import dotenv from 'dotenv';
 import { PuppeteerAgent } from '../src/puppeteer';
 import { launchPuppeteerPage } from '../src/puppeteer/agent-launcher';

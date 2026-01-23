@@ -1,5 +1,5 @@
-import type { DeviceAction, WebUIContext } from '@midscene/core';
-import type { Agent } from '@midscene/core/agent';
+import type { DeviceAction, WebUIContext } from '@darkpatternhunter/core';
+import type { Agent } from '@darkpatternhunter/core/agent';
 
 export interface PlaygroundAgent extends Agent {
   [key: string]: any; // Allow dynamic method access for backward compatibility

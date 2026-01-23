@@ -1,6 +1,6 @@
-import type { DeviceAction } from '@midscene/core';
-import { findAllMidsceneLocatorField } from '@midscene/core/ai-model';
-import { buildDetailedLocateParam } from '@midscene/core/yaml';
+import type { DeviceAction } from '@darkpatternhunter/core';
+import { findAllMidsceneLocatorField } from '@darkpatternhunter/core/ai-model';
+import { buildDetailedLocateParam } from '@darkpatternhunter/core/yaml';
 import type {
   ExecutionOptions,
   FormValue,

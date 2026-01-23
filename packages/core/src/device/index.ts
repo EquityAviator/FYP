@@ -1,7 +1,7 @@
 import { getMidsceneLocationSchema } from '@/ai-model';
 import type { DeviceAction, LocateResultElement } from '@/types';
-import type { ElementNode } from '@midscene/shared/extractor';
-import { _keyDefinitions } from '@midscene/shared/us-keyboard-layout';
+import type { ElementNode } from '@darkpatternhunter/shared/extractor';
+import { _keyDefinitions } from '@darkpatternhunter/shared/us-keyboard-layout';
 import { z } from 'zod';
 import type { ElementCacheFeature, Rect, Size, UIContext } from '../types';
 

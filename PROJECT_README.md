@@ -66,7 +66,7 @@ Current Version: **0.30.8**
 │                            │                                   │
 │                    ┌───────▼────────┐                          │
 │                    │  Core Package │                           │
-│                    │  (@midscene/  │                           │
+│                    │  (@darkpatternhunter/  │                           │
 │                    │     core)     │                           │
 │                    └───────┬───────┘                          │
 │                            │                                   │
@@ -88,20 +88,20 @@ Current Version: **0.30.8**
 ### Package Dependencies
 
 ```
-@midscene/core (Core Engine)
-    ├── @midscene/shared (Shared utilities)
+@darkpatternhunter/core (Core Engine)
+    ├── @darkpatternhunter/shared (Shared utilities)
     ├── AI Model Integrations
     └── Agent & Device Abstractions
          │
-         ├── @midscene/web (Web Integration)
+         ├── @darkpatternhunter/web (Web Integration)
          │   ├── Puppeteer Integration
          │   ├── Playwright Integration
          │   └── Bridge Mode (Chrome Extension)
          │
-         ├── @midscene/android (Android Integration)
+         ├── @darkpatternhunter/android (Android Integration)
          │   └── ADB Integration
          │
-         └── @midscene/ios (iOS Integration)
+         └── @darkpatternhunter/ios (iOS Integration)
              └── WebDriverAgent Integration
 ```
 
@@ -151,7 +151,7 @@ midscene/
 
 ### Core Packages
 
-#### `@midscene/core` - Core Engine
+#### `@darkpatternhunter/core` - Core Engine
 
 **Purpose**: The heart of Midscene.js, providing the core automation engine.
 
@@ -164,9 +164,9 @@ midscene/
 
 **Main Exports**:
 ```typescript
-import { Agent } from '@midscene/core';
-import { createAgent } from '@midscene/core/agent';
-import { Device } from '@midscene/core/device';
+import { Agent } from '@darkpatternhunter/core';
+import { createAgent } from '@darkpatternhunter/core/agent';
+import { Device } from '@darkpatternhunter/core/device';
 ```
 
 **Key Modules**:
@@ -177,7 +177,7 @@ import { Device } from '@midscene/core/device';
 - `tree/` - UI tree structure
 - `report.ts` - Report generation
 
-#### `@midscene/shared` - Shared Utilities
+#### `@darkpatternhunter/shared` - Shared Utilities
 
 **Purpose**: Common utilities and types shared across packages.
 
@@ -187,7 +187,7 @@ import { Device } from '@midscene/core/device';
 - Constants
 - Image processing utilities
 
-#### `@midscene/web` - Web Integration
+#### `@darkpatternhunter/web` - Web Integration
 
 **Purpose**: Web browser automation integration.
 
@@ -199,9 +199,9 @@ import { Device } from '@midscene/core/device';
 
 **Main Exports**:
 ```typescript
-import { createAgent } from '@midscene/web/puppeteer';
-import { createAgent } from '@midscene/web/playwright';
-import { AgentOverChromeBridge } from '@midscene/web/bridge-mode';
+import { createAgent } from '@darkpatternhunter/web/puppeteer';
+import { createAgent } from '@darkpatternhunter/web/playwright';
+import { AgentOverChromeBridge } from '@darkpatternhunter/web/bridge-mode';
 ```
 
 **Integration Points**:
@@ -210,7 +210,7 @@ import { AgentOverChromeBridge } from '@midscene/web/bridge-mode';
 - `bridge-mode/` - Chrome extension bridge
 - `static/` - Static mode (no browser)
 
-#### `@midscene/android` - Android Integration
+#### `@darkpatternhunter/android` - Android Integration
 
 **Purpose**: Android device automation.
 
@@ -222,15 +222,15 @@ import { AgentOverChromeBridge } from '@midscene/web/bridge-mode';
 
 **Main Exports**:
 ```typescript
-import { createAgent } from '@midscene/android';
-import { AndroidDevice } from '@midscene/android';
+import { createAgent } from '@darkpatternhunter/android';
+import { AndroidDevice } from '@darkpatternhunter/android';
 ```
 
 **Dependencies**:
 - `appium-adb` - ADB JavaScript bridge
 - `yadb` - Fast text input tool
 
-#### `@midscene/ios` - iOS Integration
+#### `@darkpatternhunter/ios` - iOS Integration
 
 **Purpose**: iOS device and simulator automation.
 
@@ -242,11 +242,11 @@ import { AndroidDevice } from '@midscene/android';
 
 **Main Exports**:
 ```typescript
-import { createAgent } from '@midscene/ios';
-import { IOSDevice } from '@midscene/ios';
+import { createAgent } from '@darkpatternhunter/ios';
+import { IOSDevice } from '@darkpatternhunter/ios';
 ```
 
-#### `@midscene/cli` - Command-Line Interface
+#### `@darkpatternhunter/cli` - Command-Line Interface
 
 **Purpose**: CLI tool for running Midscene scripts.
 
@@ -262,7 +262,7 @@ midscene run script.yaml
 midscene serve
 ```
 
-#### `@midscene/visualizer` - Visualization Components
+#### `@darkpatternhunter/visualizer` - Visualization Components
 
 **Purpose**: React components for visualizing automation execution.
 
@@ -275,10 +275,10 @@ midscene serve
 
 **Usage**:
 ```typescript
-import { UniversalPlayground, Player } from '@midscene/visualizer';
+import { UniversalPlayground, Player } from '@darkpatternhunter/visualizer';
 ```
 
-#### `@midscene/playground` - Playground SDK
+#### `@darkpatternhunter/playground` - Playground SDK
 
 **Purpose**: SDK for building playground applications.
 
@@ -288,7 +288,7 @@ import { UniversalPlayground, Player } from '@midscene/visualizer';
 - Storage providers (LocalStorage, IndexedDB)
 - Context providers
 
-#### `@midscene/mcp` - MCP Server
+#### `@darkpatternhunter/mcp` - MCP Server
 
 **Purpose**: Model Context Protocol server implementation.
 
@@ -298,7 +298,7 @@ import { UniversalPlayground, Player } from '@midscene/visualizer';
 - Resource management
 - Prompt templates
 
-#### `@midscene/recorder` - Recording Utilities
+#### `@darkpatternhunter/recorder` - Recording Utilities
 
 **Purpose**: Utilities for recording user interactions.
 
@@ -309,10 +309,10 @@ import { UniversalPlayground, Player } from '@midscene/visualizer';
 
 ### Supporting Packages
 
-- `@midscene/webdriver` - WebDriver utilities
-- `@midscene/evaluation` - Evaluation and testing tools
-- `@midscene/android-playground` - Android playground server
-- `@midscene/ios-playground` - iOS playground server
+- `@darkpatternhunter/webdriver` - WebDriver utilities
+- `@darkpatternhunter/evaluation` - Evaluation and testing tools
+- `@darkpatternhunter/android-playground` - Android playground server
+- `@darkpatternhunter/ios-playground` - iOS playground server
 
 ---
 
@@ -504,10 +504,10 @@ pnpm run dev
 
 ```bash
 # Build a specific package
-npx nx build @midscene/web
+npx nx build @darkpatternhunter/web
 
 # Build with watch mode
-npx nx build @midscene/web --watch
+npx nx build @darkpatternhunter/web --watch
 ```
 
 #### Run Applications
@@ -567,7 +567,7 @@ await agent.aiTap('the submit button');
 
 #### Web - Puppeteer
 ```typescript
-import { createAgent } from '@midscene/web/puppeteer';
+import { createAgent } from '@darkpatternhunter/web/puppeteer';
 import puppeteer from 'puppeteer';
 
 const browser = await puppeteer.launch();
@@ -577,7 +577,7 @@ const agent = await createAgent(page);
 
 #### Web - Playwright
 ```typescript
-import { createAgent } from '@midscene/web/playwright';
+import { createAgent } from '@darkpatternhunter/web/playwright';
 import { chromium } from 'playwright';
 
 const browser = await chromium.launch();
@@ -587,7 +587,7 @@ const agent = await createAgent(page);
 
 #### Web - Bridge Mode (Chrome Extension)
 ```typescript
-import { AgentOverChromeBridge } from '@midscene/web/bridge-mode';
+import { AgentOverChromeBridge } from '@darkpatternhunter/web/bridge-mode';
 
 const agent = new AgentOverChromeBridge();
 await agent.connect();
@@ -595,7 +595,7 @@ await agent.connect();
 
 #### Android
 ```typescript
-import { createAgent } from '@midscene/android';
+import { createAgent } from '@darkpatternhunter/android';
 
 const agent = await createAgent({
   deviceId: 'your-device-id'
@@ -604,7 +604,7 @@ const agent = await createAgent({
 
 #### iOS
 ```typescript
-import { createAgent } from '@midscene/ios';
+import { createAgent } from '@darkpatternhunter/ios';
 
 const agent = await createAgent({
   deviceId: 'your-device-id'
@@ -660,7 +660,7 @@ midscene run script.yaml
 Generate and view detailed execution reports:
 
 ```typescript
-import { generateReport } from '@midscene/core/report';
+import { generateReport } from '@darkpatternhunter/core/report';
 
 const report = await generateReport(executionData);
 // Save report as HTML
@@ -750,7 +750,7 @@ const info = await device.getPageInfo();
 pnpm run test
 
 # Run tests for a specific package
-npx nx test @midscene/web
+npx nx test @darkpatternhunter/web
 
 # Run with AI features (requires .env)
 pnpm run test:ai
@@ -769,7 +769,7 @@ pnpm run e2e:cache
 pnpm run e2e:report
 
 # Run with UI mode
-npx nx e2e @midscene/web --ui
+npx nx e2e @darkpatternhunter/web --ui
 ```
 
 ### Test Structure
@@ -931,7 +931,7 @@ pnpm run build
 ### Community
 
 - **Discord**: [Join Discord](https://discord.gg/2JyBHxszE4)
-- **Twitter**: [@midscene_ai](https://x.com/midscene_ai)
+- **Twitter**: [@darkpatternhunter_ai](https://x.com/midscene_ai)
 - **GitHub**: [web-infra-dev/midscene](https://github.com/web-infra-dev/midscene)
 
 ### Related Projects
@@ -978,7 +978,7 @@ Midscene.js is built on top of amazing open-source projects:
 ### Example 1: Web Automation with Playwright
 
 ```typescript
-import { createAgent } from '@midscene/web/playwright';
+import { createAgent } from '@darkpatternhunter/web/playwright';
 import { chromium } from 'playwright';
 
 const browser = await chromium.launch();
@@ -997,7 +997,7 @@ await browser.close();
 ### Example 2: Android Automation
 
 ```typescript
-import { createAgent } from '@midscene/android';
+import { createAgent } from '@darkpatternhunter/android';
 
 const agent = await createAgent({ deviceId: 'device-id' });
 await agent.aiTap('the settings icon');

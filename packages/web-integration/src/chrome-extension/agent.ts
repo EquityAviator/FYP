@@ -1,4 +1,4 @@
-import { type AgentOpt, Agent as PageAgent } from '@midscene/core/agent';
+import { type AgentOpt, Agent as PageAgent } from '@darkpatternhunter/core/agent';
 import type ChromeExtensionProxyPage from './page';
 
 export class ChromeExtensionProxyPageAgent extends PageAgent {

@@ -1,5 +1,5 @@
 import path, { join, resolve } from 'node:path';
-import { assert } from '@midscene/shared/utils';
+import { assert } from '@darkpatternhunter/shared/utils';
 
 import { existsSync, readFileSync } from 'node:fs';
 import type { PageAgent } from '@/index';
@@ -8,10 +8,10 @@ import type {
   DeviceAction,
   GroupedActionDump,
   MidsceneYamlScriptWebEnv,
-} from '@midscene/core';
-import { ScriptPlayer, buildYaml, parseYamlScript } from '@midscene/core/yaml';
-import { getMidsceneRunSubDir } from '@midscene/shared/common';
-import { uuid } from '@midscene/shared/utils';
+} from '@darkpatternhunter/core';
+import { ScriptPlayer, buildYaml, parseYamlScript } from '@darkpatternhunter/core/yaml';
+import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
+import { uuid } from '@darkpatternhunter/shared/utils';
 import { type MockedFunction, describe, expect, test, vi } from 'vitest';
 
 const serverRoot = join(__dirname, 'server_root');

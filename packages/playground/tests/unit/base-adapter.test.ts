@@ -1,4 +1,4 @@
-import type { DeviceAction } from '@midscene/core';
+import type { DeviceAction } from '@darkpatternhunter/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BasePlaygroundAdapter } from '../../src/adapters/base';
 import type { FormValue } from '../../src/types';

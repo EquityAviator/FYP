@@ -1,4 +1,4 @@
-import type { ChromeRecordedEvent } from '@midscene/recorder';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
 import { recordLogger } from '../../logger';
 import type {
   EventCounts,

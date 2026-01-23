@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { uiTarsPlanning } from '@/ai-model/ui-tars-planning';
-import { savePositionImg } from '@midscene/shared/img';
+import { savePositionImg } from '@darkpatternhunter/shared/img';
 import { getContextFromFixture } from 'tests/evaluation';
 import { assert, describe, expect, it } from 'vitest';
 

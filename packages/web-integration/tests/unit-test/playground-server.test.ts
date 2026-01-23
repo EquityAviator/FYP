@@ -1,5 +1,5 @@
-import { PlaygroundServer } from '@midscene/playground';
-import { StaticPage, StaticPageAgent } from '@midscene/web/static';
+import { PlaygroundServer } from '@darkpatternhunter/playground';
+import { StaticPage, StaticPageAgent } from '@darkpatternhunter/web/static';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('Playground Server', () => {

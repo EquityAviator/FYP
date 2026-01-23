@@ -3,9 +3,9 @@ import {
   type AIArgs,
   callAIWithObjectResponse,
   callAIWithStringResponse,
-} from '@midscene/core/ai-model';
-import type { ChromeRecordedEvent } from '@midscene/recorder';
-import type { IModelConfig } from '@midscene/shared/env';
+} from '@darkpatternhunter/core/ai-model';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import { message } from 'antd';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';

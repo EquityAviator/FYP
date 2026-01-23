@@ -1,13 +1,13 @@
-import { Agent as PageAgent } from '@midscene/core/agent';
+import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
 import type { Page as PlaywrightPage } from 'playwright';
 import { WebPage as PlaywrightWebPage } from './page';
 
 export type { PlayWrightAiFixtureType } from './ai-fixture';
 export { PlaywrightAiFixture } from './ai-fixture';
-export { overrideAIConfig } from '@midscene/shared/env';
+export { overrideAIConfig } from '@darkpatternhunter/shared/env';
 export { WebPage as PlaywrightWebPage } from './page';
 import type { WebPageAgentOpt } from '@/web-element';
-import { getDebug } from '@midscene/shared/logger';
+import { getDebug } from '@darkpatternhunter/shared/logger';
 import { forceClosePopup } from '../puppeteer/base-page';
 
 const debug = getDebug('playwright:agent');

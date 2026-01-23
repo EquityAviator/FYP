@@ -1,5 +1,5 @@
-import { Agent, type AgentOpt } from '@midscene/core/agent';
-import { assert } from '@midscene/shared/utils';
+import { Agent, type AgentOpt } from '@darkpatternhunter/core/agent';
+import { assert } from '@darkpatternhunter/shared/utils';
 import { commonWebActionsForWebPage } from '../web-page';
 import type { KeyboardAction, MouseAction } from '../web-page';
 import {

@@ -2,11 +2,11 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Server } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Agent as PageAgent } from '@midscene/core/agent';
-import { getTmpDir } from '@midscene/core/utils';
-import { PLAYGROUND_SERVER_PORT } from '@midscene/shared/constants';
-import { overrideAIConfig } from '@midscene/shared/env';
-import { uuid } from '@midscene/shared/utils';
+import type { Agent as PageAgent } from '@darkpatternhunter/core/agent';
+import { getTmpDir } from '@darkpatternhunter/core/utils';
+import { PLAYGROUND_SERVER_PORT } from '@darkpatternhunter/shared/constants';
+import { overrideAIConfig } from '@darkpatternhunter/shared/env';
+import { uuid } from '@darkpatternhunter/shared/utils';
 import express, { type Request, type Response } from 'express';
 import { executeAction, formatErrorMessage } from './common';
 

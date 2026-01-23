@@ -1,8 +1,8 @@
 import { readFileSync, rmSync } from 'node:fs';
-import type { ReportDumpWithAttributes } from '@midscene/core';
-import { getReportFileName, printReportMsg } from '@midscene/core/agent';
-import { writeDumpReport } from '@midscene/core/utils';
-import { replaceIllegalPathCharsAndSpace } from '@midscene/shared/utils';
+import type { ReportDumpWithAttributes } from '@darkpatternhunter/core';
+import { getReportFileName, printReportMsg } from '@darkpatternhunter/core/agent';
+import { writeDumpReport } from '@darkpatternhunter/core/utils';
+import { replaceIllegalPathCharsAndSpace } from '@darkpatternhunter/shared/utils';
 import type {
   FullConfig,
   Reporter,

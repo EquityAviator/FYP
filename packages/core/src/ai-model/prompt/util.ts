@@ -1,13 +1,13 @@
 import { imageInfoOfBase64 } from '@/image/index';
 import type { BaseElement, ElementTreeNode, Size, UIContext } from '@/types';
-import { NodeType } from '@midscene/shared/constants';
-import type { TVlModeTypes } from '@midscene/shared/env';
+import { NodeType } from '@darkpatternhunter/shared/constants';
+import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
 import {
   descriptionOfTree,
   generateElementByPosition,
   treeToList,
-} from '@midscene/shared/extractor';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/extractor';
+import { assert } from '@darkpatternhunter/shared/utils';
 
 export function describeSize(size: Size) {
   return `${size.width} x ${size.height}`;

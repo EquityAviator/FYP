@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { sleep } from '@midscene/core/utils';
+import { sleep } from '@darkpatternhunter/core/utils';
 import { expect } from '@playwright/test';
 import { test } from './fixture';
 

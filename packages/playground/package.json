@@ -1,5 +1,5 @@
 {
-  "name": "@midscene/playground",
+  "name": "@darkpatternhunter/playground",
   "version": "0.30.8",
   "description": "Midscene playground utilities for web integration",
   "author": "midscene team",
@@ -25,8 +25,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@midscene/core": "workspace:*",
-    "@midscene/shared": "workspace:*",
+    "@darkpatternhunter/core": "workspace:*",
+    "@darkpatternhunter/shared": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",

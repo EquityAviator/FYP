@@ -1,13 +1,13 @@
 import { join } from 'node:path';
 import { WebPageContextParser } from '@/web-element';
 import type { WebElementInfo } from '@/web-element';
-import { traverseTree, treeToList } from '@midscene/shared/extractor';
+import { traverseTree, treeToList } from '@darkpatternhunter/shared/extractor';
 import {
   compositeElementInfoImg,
   imageInfoOfBase64,
   saveBase64Image,
-} from '@midscene/shared/img';
-import { getElementInfosScriptContent } from '@midscene/shared/node';
+} from '@darkpatternhunter/shared/img';
+import { getElementInfosScriptContent } from '@darkpatternhunter/shared/node';
 import { createServer } from 'http-server';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { launchPage } from '../ai/web/puppeteer/utils';

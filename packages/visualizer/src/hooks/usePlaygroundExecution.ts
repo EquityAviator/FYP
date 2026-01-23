@@ -1,4 +1,4 @@
-import type { DeviceAction } from '@midscene/core';
+import type { DeviceAction } from '@darkpatternhunter/core';
 import { useCallback } from 'react';
 import { useEnvConfig } from '../store/store';
 import type {
@@ -8,7 +8,7 @@ import type {
   StorageProvider,
 } from '../types';
 
-import { noReplayAPIs } from '@midscene/playground';
+import { noReplayAPIs } from '@darkpatternhunter/playground';
 import { BLANK_RESULT } from '../utils/constants';
 import { allScriptsFromDump } from '../utils/replay-scripts';
 

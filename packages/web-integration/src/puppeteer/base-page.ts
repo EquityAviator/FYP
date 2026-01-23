@@ -7,23 +7,23 @@ import type {
   Rect,
   Size,
   UIContext,
-} from '@midscene/core';
-import type { AbstractInterface } from '@midscene/core/device';
-import { sleep } from '@midscene/core/utils';
+} from '@darkpatternhunter/core';
+import type { AbstractInterface } from '@darkpatternhunter/core/device';
+import { sleep } from '@darkpatternhunter/core/utils';
 import {
   DEFAULT_WAIT_FOR_NAVIGATION_TIMEOUT,
   DEFAULT_WAIT_FOR_NETWORK_IDLE_CONCURRENCY,
   DEFAULT_WAIT_FOR_NETWORK_IDLE_TIMEOUT,
-} from '@midscene/shared/constants';
-import type { ElementInfo } from '@midscene/shared/extractor';
-import { treeToList } from '@midscene/shared/extractor';
-import { createImgBase64ByFormat } from '@midscene/shared/img';
-import { type DebugFunction, getDebug } from '@midscene/shared/logger';
+} from '@darkpatternhunter/shared/constants';
+import type { ElementInfo } from '@darkpatternhunter/shared/extractor';
+import { treeToList } from '@darkpatternhunter/shared/extractor';
+import { createImgBase64ByFormat } from '@darkpatternhunter/shared/img';
+import { type DebugFunction, getDebug } from '@darkpatternhunter/shared/logger';
 import {
   getElementInfosScriptContent,
   getExtraReturnLogic,
-} from '@midscene/shared/node';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/node';
+import { assert } from '@darkpatternhunter/shared/utils';
 import type { Page as PlaywrightPage } from 'playwright';
 import type { Page as PuppeteerPage } from 'puppeteer';
 import {

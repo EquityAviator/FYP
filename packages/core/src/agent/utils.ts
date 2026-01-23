@@ -13,19 +13,19 @@ import type {
   UIContext,
 } from '@/types';
 import { uploadTestInfoToServer } from '@/utils';
-import { NodeType } from '@midscene/shared/constants';
+import { NodeType } from '@darkpatternhunter/shared/constants';
 import {
   MIDSCENE_REPORT_TAG_NAME,
   globalConfigManager,
-} from '@midscene/shared/env';
+} from '@darkpatternhunter/shared/env';
 import {
   generateElementByPosition,
   getNodeFromCacheList,
-} from '@midscene/shared/extractor';
-import { resizeImgBase64 } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { _keyDefinitions } from '@midscene/shared/us-keyboard-layout';
-import { assert, logMsg, uuid } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/extractor';
+import { resizeImgBase64 } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { _keyDefinitions } from '@darkpatternhunter/shared/us-keyboard-layout';
+import { assert, logMsg, uuid } from '@darkpatternhunter/shared/utils';
 import dayjs from 'dayjs';
 import { debug as cacheDebug } from './task-cache';
 import type { TaskExecutor } from './tasks';

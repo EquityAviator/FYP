@@ -5,9 +5,9 @@ import {
   type PlanningCache,
   TaskCache,
   cacheFileExt,
-} from '@midscene/core/agent';
-import { getMidsceneRunSubDir } from '@midscene/shared/common';
-import { uuid } from '@midscene/shared/utils';
+} from '@darkpatternhunter/core/agent';
+import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
+import { uuid } from '@darkpatternhunter/shared/utils';
 import yaml from 'js-yaml';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 

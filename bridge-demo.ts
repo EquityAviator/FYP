@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AgentOverChromeBridge } from '@midscene/web/bridge-mode';
+import { AgentOverChromeBridge } from '@darkpatternhunter/web/bridge-mode';
 
 function loadEnv(filePath: string) {
   if (!fs.existsSync(filePath)) return;

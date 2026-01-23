@@ -119,31 +119,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         <div className="mt-3 text-center">
           <Text type="secondary" className="text-xs">
             {type === 'playwright' ? (
-              <>
-                💡 Learn how to integrate Playwright with Midscene.js
-                <a
-                  target="_blank"
-                  href="https://midscenejs.com/integrate-with-playwright.html"
-                  rel="noreferrer"
-                >
-                  {' '}
-                  here
-                </a>
-                .
-              </>
+              <>💡 Learn how to integrate Playwright with the SDK.</>
             ) : (
-              <>
-                💡 Learn how to integrate YAML scripts with Midscene.js
-                <a
-                  target="_blank"
-                  href="https://midscenejs.com/automate-with-scripts-in-yaml.html"
-                  rel="noreferrer"
-                >
-                  {' '}
-                  here
-                </a>
-                .
-              </>
+              <>💡 Learn how to integrate YAML scripts with the SDK.</>
             )}
           </Text>
         </div>

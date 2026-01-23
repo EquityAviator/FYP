@@ -13,12 +13,12 @@ import {
   type TVlModeTypes,
   type UITarsModelVersion,
   globalConfigManager,
-} from '@midscene/shared/env';
+} from '@darkpatternhunter/shared/env';
 
-import { parseBase64 } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
-import { ifInBrowser } from '@midscene/shared/utils';
+import { parseBase64 } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
+import { ifInBrowser } from '@darkpatternhunter/shared/utils';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { jsonrepair } from 'jsonrepair';
 import OpenAI, { AzureOpenAI } from 'openai';

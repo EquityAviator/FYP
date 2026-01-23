@@ -1,4 +1,4 @@
-import type { ChromeRecordedEvent } from '@midscene/recorder';
+import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
 
 // Common interfaces for test generation
 export interface EventCounts {

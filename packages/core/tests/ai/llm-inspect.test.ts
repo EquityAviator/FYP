@@ -6,7 +6,7 @@ import {
 import {
   globalConfigManager,
   globalModelConfigManager,
-} from '@midscene/shared/env';
+} from '@darkpatternhunter/shared/env';
 import { getContextFromFixture } from 'tests/evaluation';
 import { beforeAll, expect, test, vi } from 'vitest';
 

@@ -1,16 +1,16 @@
 import { PlaywrightAiFixture } from '@/playwright/ai-fixture';
-import { processCacheConfig } from '@midscene/core/utils';
+import { processCacheConfig } from '@darkpatternhunter/core/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the global config manager to control environment variables
-vi.mock('@midscene/shared/env', () => ({
+vi.mock('@darkpatternhunter/shared/env', () => ({
   MIDSCENE_CACHE: 'MIDSCENE_CACHE',
   globalConfigManager: {
     getEnvConfigInBoolean: vi.fn(),
   },
 }));
 
-import { globalConfigManager } from '@midscene/shared/env';
+import { globalConfigManager } from '@darkpatternhunter/shared/env';
 
 describe('PlaywrightAiFixture Cache Configuration', () => {
   beforeEach(() => {

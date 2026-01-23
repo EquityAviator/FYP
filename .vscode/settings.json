@@ -41,5 +41,6 @@
   "[plaintext]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "nxConsole.generateAiAgentRules": true
+  "nxConsole.generateAiAgentRules": true,
+  "git.ignoreLimitWarning": true
 }

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { NodeType } from '@midscene/shared/constants';
-import type { TModelConfigFn } from '@midscene/shared/env';
+import type { NodeType } from '@darkpatternhunter/shared/constants';
+import type { TModelConfigFn } from '@darkpatternhunter/shared/env';
 import type {
   BaseElement,
   ElementTreeNode,
   Rect,
   Size,
-} from '@midscene/shared/types';
+} from '@darkpatternhunter/shared/types';
 import type { z } from 'zod';
 import type { TUserPrompt } from './ai-model/common';
 import type { DetailedLocateParam, MidsceneYamlFlowItem } from './yaml';
@@ -18,7 +18,7 @@ export type {
   Rect,
   Size,
   Point,
-} from '@midscene/shared/types';
+} from '@darkpatternhunter/shared/types';
 export * from './yaml';
 
 export type AIUsageInfo = Record<string, any> & {

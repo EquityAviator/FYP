@@ -1,5 +1,5 @@
 // Temporary streaming types for Chrome extension
-// TODO: Replace with imports from @midscene/core once exports are updated
+// TODO: Replace with imports from @darkpatternhunter/core once exports are updated
 
 export interface StreamingCodeGenerationOptions {
   /** Whether to enable streaming output */

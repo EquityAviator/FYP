@@ -53,10 +53,10 @@ import type { AbstractInterface } from '@/device';
 import {
   ModelConfigManager,
   globalModelConfigManager,
-} from '@midscene/shared/env';
-import { imageInfoOfBase64, resizeImgBase64 } from '@midscene/shared/img';
-import { getDebug } from '@midscene/shared/logger';
-import { assert } from '@midscene/shared/utils';
+} from '@darkpatternhunter/shared/env';
+import { imageInfoOfBase64, resizeImgBase64 } from '@darkpatternhunter/shared/img';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { assert } from '@darkpatternhunter/shared/utils';
 // import type { AndroidDeviceInputOpt } from '../device';
 import { TaskCache } from './task-cache';
 import { TaskExecutor, locatePlanForLocate } from './tasks';

@@ -1,5 +1,5 @@
 import { AgentOverChromeBridge } from '@/bridge-mode/agent-cli-side';
-import { sleep } from '@midscene/core/utils';
+import { sleep } from '@darkpatternhunter/core/utils';
 import { describe, it, vi } from 'vitest';
 
 vi.setConfig({

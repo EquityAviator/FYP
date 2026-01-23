@@ -1,5 +1,5 @@
 import { AiExtractElementInfo } from '@/ai-model';
-import { globalModelConfigManager } from '@midscene/shared/env';
+import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { getContextFromFixture } from 'tests/evaluation';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
