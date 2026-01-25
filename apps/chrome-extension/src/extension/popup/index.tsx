@@ -67,9 +67,17 @@ export function PlaygroundPopup() {
   // Override AI configuration
   useEffect(() => {
     const loadAndOverrideConfig = async () => {
-      // Get API key from chrome storage
-      const result = await chrome.storage.local.get(['openaiApiKey']);
-      const apiKey = result.openaiApiKey; // can be empty or undefined
+      let apiKey = '';
+
+      // Get API key from chrome storage if available
+      if (chrome?.storage?.local) {
+        try {
+          const result = await chrome.storage.local.get(['openaiApiKey']);
+          apiKey = result.openaiApiKey; // can be empty or undefined
+        } catch (e) {
+          console.warn('Failed to access chrome storage:', e);
+        }
+      }
 
       console.log('Chrome Extension - Loading AI config');
       console.log('Stored API Key found:', !!apiKey);
@@ -83,7 +91,7 @@ export function PlaygroundPopup() {
           [MIDSCENE_OPENAI_API_KEY]: apiKey,
           [OPENAI_API_KEY]: apiKey,
           [MIDSCENE_MODEL_NAME]: 'gpt-4o',
-          [MIDSCENE_VL_MODE]: undefined as any, // Unset VL mode for OpenAI
+          [MIDSCENE_VL_MODE]: '', // Unset VL mode for OpenAI
         };
       } else {
         // fallback to local UI-TARS
@@ -95,10 +103,6 @@ export function PlaygroundPopup() {
           [MIDSCENE_VL_MODE]: 'vlm-ui-tars',
         };
       }
-
-      // Merge with user config if provided (Environment Config UI takes precedence if set there)
-      // However, for the extension, we prioritize our auto-config unless explicit user overrides exist in the tool?
-      // Actually `safeOverrideAIConfig` merges into the global store.
 
       console.log('Applying AI config:', configToOverride);
       safeOverrideAIConfig(configToOverride);

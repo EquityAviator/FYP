@@ -1,7 +1,7 @@
 {
   "name": "chrome-extension",
   "private": true,
-  "version": "0.12.4",
+  "version": "0.140",
   "type": "module",
   "scripts": {
     "build": "rsbuild build && npm run pack-extension",
@@ -17,7 +17,6 @@
     "@darkpatternhunter/shared": "workspace:*",
     "@darkpatternhunter/visualizer": "workspace:*",
     "@darkpatternhunter/web": "workspace:*",
-
     "@types/file-saver": "2.0.7",
     "antd": "^5.21.6",
     "canvas-confetti": "1.9.3",

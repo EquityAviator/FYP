@@ -6,6 +6,10 @@ export function Settings() {
   const [isLoading, setIsLoading] = useState(true);
 
   const saveApiKey = async () => {
+    if (!chrome?.storage?.local) {
+      message.error('Extension storage not available');
+      return;
+    }
     try {
       await chrome.storage.local.set({ openaiApiKey: apiKey });
       message.success('API key saved');
@@ -17,6 +21,10 @@ export function Settings() {
 
   // Load existing key on mount
   useEffect(() => {
+    if (!chrome?.storage?.local) {
+      setIsLoading(false);
+      return;
+    }
     chrome.storage.local.get(['openaiApiKey'], (result) => {
       if (result.openaiApiKey) {
         setApiKey(result.openaiApiKey);

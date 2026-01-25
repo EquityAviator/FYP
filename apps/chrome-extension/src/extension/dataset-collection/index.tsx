@@ -6,6 +6,7 @@ import {
   WarningOutlined,
   CheckCircleOutlined,
   EyeOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -49,6 +50,9 @@ import {
 } from '../../utils/datasetDB';
 import { cropImageFromBbox } from '../../utils/imageCrop';
 import { isPakistaniEcommerceSite, getSiteName, validateUrl } from '../../utils/pakistaniSites';
+import { exportAsCOCO, exportAsYOLO, exportAnnotatedImages } from '../../utils/cocoYoloExport';
+import { drawBboxesOnImage } from '../../utils/bboxOverlay';
+import BboxEditor from './BboxEditor';
 import './index.less';
 
 const { Text, Paragraph } = Typography;
@@ -81,20 +85,14 @@ Evidence requirements:
 - Only include patterns with confidence > 0.7.
 - Prefer concise descriptions and precise locations (e.g., "product card badge", "checkout summary fee line", "overlay top-right close button").
 
-🚨 CRITICAL BOUNDING BOX REQUIREMENT 🚨
-For EVERY pattern you detect, you MUST provide bounding box coordinates [x, y, width, height] in pixels.
-- Look at the screenshot and identify the EXACT pixel coordinates where the dark pattern element appears
+BOUNDING BOX GUIDANCE:
+- If the pattern is visual (e.g., a countdown timer, a banner, a button), provide bounding box coordinates [x, y, width, height] in pixels.
+- If the pattern is purely textual or conceptual (e.g., hidden terms in a long paragraph, or general site structure like infinite scroll), providing a bounding box is OPTIONAL. You can omit the "bbox" field or set it to null.
+- DO NOT invent bounding boxes if you are unsure.
 - x: left edge position in pixels (0 = leftmost)
 - y: top edge position in pixels (0 = topmost)
 - width: width of the element in pixels
 - height: height of the element in pixels
-- The bbox MUST accurately enclose the visual element showing the dark pattern
-
-Examples:
-- If "Only 3 left!" text appears at top-left corner (100, 50) with size 120x25: "bbox": [100, 50, 120, 25]
-- If a countdown timer is at (800, 300) with size 200x40: "bbox": [800, 300, 200, 40]
-- If a fake "X" close button is at (950, 20) with size 30x30: "bbox": [950, 20, 30, 30]
-- If a pre-selected checkbox is at (50, 400) with size 20x20: "bbox": [50, 400, 20, 20]
 
 OUTPUT REQUIREMENT: Return ONLY valid JSON with this exact structure:
 {
@@ -106,7 +104,7 @@ OUTPUT REQUIREMENT: Return ONLY valid JSON with this exact structure:
       "location": "Where on page (header, product card, checkout, modal, etc.)",
       "evidence": "Exact text/element that proves the pattern",
       "confidence": 0.85,
-      "bbox": [x, y, width, height]
+      "bbox": [x, y, width, height] // Optional
     }
   ],
   "summary": {
@@ -117,11 +115,9 @@ OUTPUT REQUIREMENT: Return ONLY valid JSON with this exact structure:
 }
 
 ⚠️ VALIDATION RULES:
-1. EVERY pattern MUST have a "bbox" field with exactly 4 numbers: [x, y, width, height]
-2. All bbox values must be non-negative integers
-3. If you cannot determine exact coordinates, estimate based on the screenshot layout
-4. DO NOT include patterns without bounding boxes - they will be rejected
-5. Only include patterns with confidence > 0.7
+1. If providing "bbox", it MUST have exactly 4 non-negative integers: [x, y, width, height]
+2. Only include patterns with confidence > 0.7
+3. Text-only patterns are WELCOME. Do not filter them out.
 
 Return ONLY valid JSON. No explanations, no markdown, just the JSON object.`;
 
@@ -159,6 +155,8 @@ export default function DatasetCollection() {
     pakistaniSitesScanned: 0,
     categoryBreakdown: {},
   });
+  const [editingEntry, setEditingEntry] = useState<DatasetEntry | null>(null);
+  const [showBboxEditor, setShowBboxEditor] = useState(false);
 
   // Load entries on mount
   useEffect(() => {
@@ -193,14 +191,14 @@ export default function DatasetCollection() {
     const totalPatterns = entries.reduce((sum, e) => sum + e.patterns.length, 0);
     const sitesWithPatterns = entries.filter(e => e.patterns.length > 0).length;
     const prevalenceRate = totalEntries > 0 ? (sitesWithPatterns / totalEntries) * 100 : 0;
-    
+
     const categoryBreakdown: Record<string, number> = {};
     entries.forEach(entry => {
       entry.patterns.forEach(pattern => {
         categoryBreakdown[pattern.type] = (categoryBreakdown[pattern.type] || 0) + 1;
       });
     });
-    
+
     const pakistaniSitesScanned = entries.filter(
       e => e.metadata?.researchContext?.isPakistaniEcommerce
     ).length;
@@ -230,8 +228,8 @@ export default function DatasetCollection() {
     filterPattern === 'ALL'
       ? entries
       : entries.filter((entry) =>
-          entry.patterns.some((p) => p.type === filterPattern),
-        );
+        entry.patterns.some((p) => p.type === filterPattern),
+      );
 
   const getCurrentTab = async () => {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -241,32 +239,32 @@ export default function DatasetCollection() {
   const waitForPageLoad = async (tabId: number, maxWait = 10000): Promise<void> => {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
-      
+
       const checkReady = async () => {
         try {
           const results = await chrome.scripting.executeScript({
             target: { tabId },
             func: () => document.readyState,
           });
-          
+
           if (results[0]?.result === 'complete') {
             // Wait a bit more for dynamic content
             await new Promise(r => setTimeout(r, 2000));
             resolve();
             return;
           }
-          
+
           if (Date.now() - startTime > maxWait) {
             reject(new Error('Page load timeout'));
             return;
           }
-          
+
           setTimeout(checkReady, 500);
         } catch (error) {
           reject(error);
         }
       };
-      
+
       checkReady();
     });
   };
@@ -274,14 +272,14 @@ export default function DatasetCollection() {
   const capturePageData = async (tabId: number) => {
     // Get tab first to get windowId
     const tab = await chrome.tabs.get(tabId);
-    
+
     if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
       throw new Error('Cannot capture Chrome internal pages');
     }
 
     // Wait for page to be ready
     await waitForPageLoad(tabId);
-    
+
     // Capture screenshot
     const screenshot = await new Promise<string>((resolve, reject) => {
       chrome.tabs.captureVisibleTab(
@@ -396,41 +394,49 @@ export default function DatasetCollection() {
           if (p.confidence !== undefined && p.confidence <= 0.7) {
             return false;
           }
-          
-          // CRITICAL: Validate bounding box is present and valid
-          if (!p.bbox || !Array.isArray(p.bbox) || p.bbox.length !== 4) {
-            console.warn(`Pattern "${p.type}" missing or invalid bbox:`, p.bbox);
-            return false; // Reject patterns without valid bbox
+
+          // Relaxed Bounding Box Validation:
+          // We allow patterns WITHOUT bbox (text-only patterns)
+          // But IF bbox is present, it must be valid.
+
+          if (p.bbox) {
+            if (!Array.isArray(p.bbox) || p.bbox.length !== 4) {
+              // Invalid bbox format -> Keep pattern but strip bbox? Or reject?
+              // Let's strip the invalid bbox and keep the pattern as text-only
+              console.warn(`Pattern "${p.type}" has invalid bbox format, removing bbox`, p.bbox);
+              delete p.bbox;
+              return true;
+            }
+
+            const [x, y, width, height] = p.bbox;
+            if (
+              typeof x !== 'number' || typeof y !== 'number' ||
+              typeof width !== 'number' || typeof height !== 'number' ||
+              x < 0 || y < 0 || width <= 0 || height <= 0 ||
+              !Number.isFinite(x) || !Number.isFinite(y) ||
+              !Number.isFinite(width) || !Number.isFinite(height)
+            ) {
+              console.warn(`Pattern "${p.type}" has invalid bbox values, removing bbox`, p.bbox);
+              delete p.bbox;
+              return true;
+            }
+
+            // Normalize bbox to integers
+            p.bbox = [
+              Math.round(x),
+              Math.round(y),
+              Math.round(width),
+              Math.round(height)
+            ];
           }
-          
-          // Validate bbox values are numbers and non-negative
-          const [x, y, width, height] = p.bbox;
-          if (
-            typeof x !== 'number' || typeof y !== 'number' ||
-            typeof width !== 'number' || typeof height !== 'number' ||
-            x < 0 || y < 0 || width <= 0 || height <= 0 ||
-            !Number.isFinite(x) || !Number.isFinite(y) ||
-            !Number.isFinite(width) || !Number.isFinite(height)
-          ) {
-            console.warn(`Pattern "${p.type}" has invalid bbox values:`, p.bbox);
-            return false; // Reject patterns with invalid bbox values
-          }
-          
-          // Normalize bbox to integers
-          p.bbox = [
-            Math.round(x),
-            Math.round(y),
-            Math.round(width),
-            Math.round(height)
-          ];
-          
+
           return true;
         });
 
         // Warn if patterns were filtered out
         if (patterns.length > validPatterns.length) {
           const filteredCount = patterns.length - validPatterns.length;
-          console.warn(`Filtered out ${filteredCount} pattern(s) due to missing/invalid bounding boxes`);
+          console.warn(`Filtered out ${filteredCount} pattern(s) due to low confidence`);
         }
 
         // CRITICAL: Crop individual images for each pattern
@@ -460,7 +466,7 @@ export default function DatasetCollection() {
       } catch (error: any) {
         lastError = error;
         console.error(`Analysis attempt ${attempt} failed:`, error);
-        
+
         if (attempt < retries) {
           // Wait before retry (exponential backoff)
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
@@ -542,11 +548,11 @@ export default function DatasetCollection() {
   ) => {
     try {
       message.loading({ content: 'Capturing page data...', key: 'analysis', duration: 0 });
-      
+
       const { screenshot, dom, metadata, url } = await capturePageData(tab.id!);
 
       message.loading({ content: 'Analyzing for dark patterns with AI...', key: 'analysis', duration: 0 });
-      
+
       const modelConfig = globalModelConfigManager.getModelConfig('default');
       if (!modelConfig || !modelConfig.modelName) {
         throw new Error('AI model not configured');
@@ -580,9 +586,9 @@ export default function DatasetCollection() {
       };
 
       await storeDatasetEntry(entry);
-      
+
       message.destroy('analysis');
-      
+
       // Show success message with bbox validation info
       const patternsWithBbox = patterns.filter(p => p.bbox && p.bbox.length === 4).length;
       if (patterns.length > 0 && patternsWithBbox === patterns.length) {
@@ -601,7 +607,7 @@ export default function DatasetCollection() {
           duration: 5,
         });
       }
-      
+
       await loadEntries();
     } catch (error: any) {
       message.destroy('analysis');
@@ -622,7 +628,7 @@ export default function DatasetCollection() {
 
     setIsProcessingQueue(true);
     const modelConfig = globalModelConfigManager.getModelConfig('default');
-    
+
     if (!modelConfig || !modelConfig.modelName) {
       message.error('AI model not configured');
       setIsProcessingQueue(false);
@@ -634,9 +640,9 @@ export default function DatasetCollection() {
 
     for (let i = 0; i < urlQueue.length; i++) {
       const url = urlQueue[i];
-      setProgress({ 
-        current: i + 1, 
-        total: urlQueue.length, 
+      setProgress({
+        current: i + 1,
+        total: urlQueue.length,
         url,
         status: 'Processing...',
       });
@@ -651,29 +657,29 @@ export default function DatasetCollection() {
         }
 
         setProgress(prev => prev ? { ...prev, status: 'Opening page...' } : null);
-        
+
         // Open URL in new tab
         tab = await chrome.tabs.create({ url, active: false });
-        
+
         if (!tab.id) {
           throw new Error('Failed to create tab');
         }
 
         setProgress(prev => prev ? { ...prev, status: 'Waiting for page to load...' } : null);
-        
+
         // Wait for page to load properly
         await waitForPageLoad(tab.id, 15000);
 
         setProgress(prev => prev ? { ...prev, status: 'Capturing page data...' } : null);
-        
+
         // Capture and analyze
         const { screenshot, dom, metadata } = await capturePageData(tab.id);
-        
+
         const isPakistaniSite = isPakistaniEcommerceSite(url);
         const siteName = getSiteName(url);
 
         setProgress(prev => prev ? { ...prev, status: 'Analyzing with AI...' } : null);
-        
+
         const { patterns, summary } = await analyzePageForDarkPatterns(
           screenshot,
           dom,
@@ -709,7 +715,7 @@ export default function DatasetCollection() {
       } catch (error: any) {
         console.error(`Error processing ${url}:`, error);
         failCount++;
-        
+
         // Close tab if it was created
         if (tab?.id) {
           try {
@@ -718,7 +724,7 @@ export default function DatasetCollection() {
             // Ignore errors when closing tab
           }
         }
-        
+
         message.warning(`Failed to process ${url}: ${error.message || 'Unknown error'}`);
       }
     }
@@ -726,12 +732,12 @@ export default function DatasetCollection() {
     setProgress(null);
     setUrlQueue([]);
     setIsProcessingQueue(false);
-    
+
     message.success({
       content: `Batch processing complete! ${successCount} succeeded, ${failCount} failed.`,
       duration: 5,
     });
-    
+
     await loadEntries();
   };
 
@@ -754,7 +760,7 @@ export default function DatasetCollection() {
           .split('\n')
           .map((u) => u.trim())
           .filter((u) => u && u.startsWith('http'));
-        
+
         if (urls.length === 0) {
           message.error('No valid URLs provided');
           return;
@@ -803,8 +809,7 @@ export default function DatasetCollection() {
     } catch (error: any) {
       console.error('Auto-discover links error:', error);
       message.error(
-        `Failed to auto-discover links: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to auto-discover links: ${error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -897,10 +902,10 @@ export default function DatasetCollection() {
           while (scrollAttempts < maxScrollAttempts) {
             // Scroll to bottom
             window.scrollTo(0, document.body.scrollHeight);
-            
+
             // Wait for content to load
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             // Check if page height changed (new content loaded)
             const currentHeight = document.body.scrollHeight;
             if (currentHeight === lastHeight) {
@@ -910,12 +915,12 @@ export default function DatasetCollection() {
             } else {
               scrollAttempts = 0; // Reset if new content found
             }
-            
+
             lastHeight = currentHeight;
-            
+
             // Collect links after scroll
             collectLinks();
-            
+
             // Try clicking "Load More" or "See More" buttons if they exist
             const loadMoreButtons = Array.from(
               document.querySelectorAll<HTMLElement>(
@@ -986,7 +991,7 @@ export default function DatasetCollection() {
       const urlObj = new URL(url);
       // Must be same origin
       if (urlObj.origin !== baseOrigin) return false;
-      
+
       const urlLower = url.toLowerCase();
       // Exclude API endpoints
       if (
@@ -1008,7 +1013,7 @@ export default function DatasetCollection() {
       ) {
         return false;
       }
-      
+
       // Exclude common non-content paths
       const path = urlObj.pathname.toLowerCase();
       if (
@@ -1021,7 +1026,7 @@ export default function DatasetCollection() {
       ) {
         return false;
       }
-      
+
       return true;
     } catch {
       return false;
@@ -1037,7 +1042,7 @@ export default function DatasetCollection() {
     try {
       const startUrlObj = new URL(startUrl);
       const baseOrigin = startUrlObj.origin;
-      
+
       Modal.confirm({
         title: '🕷️ Full Website Crawl',
         width: 600,
@@ -1067,25 +1072,25 @@ export default function DatasetCollection() {
         onOk: async () => {
           setIsRecursiveCrawling(true);
           setCrawlProgress({ discovered: 0, visited: 0, queue: 1, currentUrl: startUrl });
-          
+
           const visitedUrls = new Set<string>();
           const urlQueue: string[] = [normalizeUrl(startUrl)];
           const allDiscoveredUrls = new Set<string>();
-          
+
           let currentIndex = 0;
           const maxPages = 10000; // Safety limit
           const delayBetweenPages = 2000; // 2 seconds between page visits
-          
-          message.loading({ 
-            content: 'Starting full website crawl... This will take a while.', 
-            key: 'recursive-crawl', 
-            duration: 0 
+
+          message.loading({
+            content: 'Starting full website crawl... This will take a while.',
+            key: 'recursive-crawl',
+            duration: 0
           });
 
           while (currentIndex < urlQueue.length && currentIndex < maxPages) {
             const currentUrl = urlQueue[currentIndex];
             const normalizedUrl = normalizeUrl(currentUrl);
-            
+
             // Skip if already visited
             if (visitedUrls.has(normalizedUrl)) {
               currentIndex++;
@@ -1099,19 +1104,19 @@ export default function DatasetCollection() {
               currentUrl: currentUrl,
             });
 
-            message.loading({ 
-              content: `Crawling: ${visitedUrls.size} visited, ${allDiscoveredUrls.size} discovered, ${urlQueue.length - currentIndex} in queue\nCurrent: ${currentUrl.substring(0, 60)}...`, 
-              key: 'recursive-crawl', 
-              duration: 0 
+            message.loading({
+              content: `Crawling: ${visitedUrls.size} visited, ${allDiscoveredUrls.size} discovered, ${urlQueue.length - currentIndex} in queue\nCurrent: ${currentUrl.substring(0, 60)}...`,
+              key: 'recursive-crawl',
+              duration: 0
             });
 
             try {
               // Open URL in new tab
-              const tab = await chrome.tabs.create({ 
-                url: currentUrl, 
-                active: false 
+              const tab = await chrome.tabs.create({
+                url: currentUrl,
+                active: false
               });
-              
+
               if (!tab.id) {
                 currentIndex++;
                 continue;
@@ -1128,54 +1133,83 @@ export default function DatasetCollection() {
                   const urls = new Set<string>();
                   let lastHeight = 0;
                   let scrollAttempts = 0;
-                  const maxScrollAttempts = 5;
+                  const maxScrollAttempts = 8; // Increased attempts
+
+                  // Recursive function to find links, piercing Shadow DOMs
+                  const findLinksInNode = (root: Document | ShadowRoot | Element) => {
+                    // Get links in current root
+                    const anchors = Array.from(root.querySelectorAll('a[href]')) as HTMLAnchorElement[];
+
+                    anchors.forEach(a => {
+                      try {
+                        const rawHref = a.getAttribute('href') || a.href;
+                        if (!rawHref) return;
+
+                        const absolute = new URL(rawHref, location.href).href;
+
+                        // Relaxed filtering: Allow same-domain and subdomains if logical
+                        // We mainly check if it's http/https and not some other protocol
+                        const urlObj = new URL(absolute);
+
+                        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') return;
+
+                        // Basic exclusion of non-page resources
+                        const urlLower = absolute.toLowerCase();
+                        if (
+                          urlLower.includes('javascript:') ||
+                          urlLower.includes('mailto:') ||
+                          urlLower.includes('tel:') ||
+                          urlLower.match(/\.(png|jpg|jpeg|gif|svg|pdf|zip|css|js|woff|woff2)$/i)
+                        ) {
+                          return;
+                        }
+
+                        // Check if it belongs to the same domain (allowing subdomains for now, or strict origin?)
+                        // User wants "all links that I use for the scratching", implying same site.
+                        // Let's stick to origin startsWith for safety against external links, 
+                        // but we can be slightly looser if needed. For now, origin check is standard for "crawling a site".
+                        if (absolute.startsWith(origin)) {
+                          urlObj.hash = ''; // Remove fragments
+                          if (urlObj.pathname !== '/' && urlObj.pathname.endsWith('/')) {
+                            urlObj.pathname = urlObj.pathname.slice(0, -1);
+                          }
+                          urls.add(urlObj.href);
+                        }
+                      } catch (e) { /* ignore invalid URLs */ }
+                    });
+
+                    // Traverse children to find Shadow Roots
+                    const allNodes = root.querySelectorAll('*');
+                    allNodes.forEach(node => {
+                      if (node.shadowRoot) {
+                        findLinksInNode(node.shadowRoot);
+                      }
+                    });
+                  };
 
                   const collectLinks = () => {
-                    const anchors = Array.from(
-                      document.querySelectorAll<HTMLAnchorElement>('a[href]'),
-                    );
-
-                    for (const a of anchors) {
-                      const rawHref = a.getAttribute('href') || a.href;
-                      if (!rawHref) continue;
-                      try {
-                        const absolute = new URL(rawHref, location.href).href;
-                        if (absolute.startsWith(origin)) {
-                          const urlLower = absolute.toLowerCase();
-                          if (
-                            !urlLower.includes('/api/') &&
-                            !urlLower.includes('/ajax/') &&
-                            !urlLower.includes('/json/') &&
-                            !urlLower.includes('#') &&
-                            !urlLower.includes('javascript:') &&
-                            !urlLower.includes('mailto:') &&
-                            !urlLower.includes('tel:')
-                          ) {
-                            // Normalize URL
-                            const urlObj = new URL(absolute);
-                            urlObj.hash = '';
-                            if (urlObj.pathname !== '/' && urlObj.pathname.endsWith('/')) {
-                              urlObj.pathname = urlObj.pathname.slice(0, -1);
-                            }
-                            urls.add(urlObj.href);
-                          }
-                        }
-                      } catch {
-                        // ignore
-                      }
-                    }
+                    findLinksInNode(document);
                   };
 
                   collectLinks();
 
-                  // Quick scroll to load lazy content
+                  // Robust scroll to load lazy content
                   for (let i = 0; i < maxScrollAttempts; i++) {
                     window.scrollTo(0, document.body.scrollHeight);
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    // Wait longer for hydration/network
+                    await new Promise(resolve => setTimeout(resolve, 2500));
+
                     const currentHeight = document.body.scrollHeight;
                     if (currentHeight === lastHeight) {
                       scrollAttempts++;
-                      if (scrollAttempts >= 2) break;
+                      // If stuck for 2 attempts, try scrolling up a bit and back down to trigger scroll events
+                      if (scrollAttempts >= 2) {
+                        window.scrollTo(0, document.body.scrollHeight - 500);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        window.scrollTo(0, document.body.scrollHeight);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        if (document.body.scrollHeight === lastHeight) break; // Still stuck
+                      }
                     } else {
                       scrollAttempts = 0;
                     }
@@ -1188,7 +1222,7 @@ export default function DatasetCollection() {
               });
 
               const links = discoveredLinks[0]?.result || [];
-              
+
               // Add new links to queue
               for (const link of links) {
                 const normalized = normalizeUrl(link);
@@ -1204,13 +1238,13 @@ export default function DatasetCollection() {
 
               // Mark as visited
               visitedUrls.add(normalizedUrl);
-              
+
               // Close tab
               await chrome.tabs.remove(tab.id);
-              
+
               // Delay between pages to avoid overwhelming the server
               await new Promise(resolve => setTimeout(resolve, delayBetweenPages));
-              
+
             } catch (error: any) {
               console.error(`Error crawling ${currentUrl}:`, error);
               // Mark as visited even if failed to avoid retrying
@@ -1225,7 +1259,7 @@ export default function DatasetCollection() {
           setCrawlProgress(null);
 
           const finalUrls = Array.from(allDiscoveredUrls);
-          
+
           Modal.success({
             title: '✅ Full Website Crawl Complete!',
             width: 700,
@@ -1270,26 +1304,26 @@ export default function DatasetCollection() {
   };
 
   const showLinkDiscoveryResult = (discovered: string[]) => {
-      if (!discovered.length) {
-        message.warning('No internal links discovered on this page');
-        return;
-      }
+    if (!discovered.length) {
+      message.warning('No internal links discovered on this page');
+      return;
+    }
 
     // Filter and categorize URLs
     const categorized = {
-      product: discovered.filter(url => 
-        url.match(/\/product\//i) || 
+      product: discovered.filter(url =>
+        url.match(/\/product\//i) ||
         url.match(/\/p\//i) ||
         url.match(/\/item\//i) ||
         url.match(/\/dp\//i)
       ),
-      category: discovered.filter(url => 
+      category: discovered.filter(url =>
         url.match(/\/category\//i) ||
         url.match(/\/c\//i) ||
         url.match(/\/shop\//i)
       ),
-      other: discovered.filter(url => 
-        !url.match(/\/product\//i) && 
+      other: discovered.filter(url =>
+        !url.match(/\/product\//i) &&
         !url.match(/\/p\//i) &&
         !url.match(/\/item\//i) &&
         !url.match(/\/dp\//i) &&
@@ -1299,7 +1333,7 @@ export default function DatasetCollection() {
       ),
     };
 
-      Modal.confirm({
+    Modal.confirm({
       title: 'Auto Crawl Results',
       width: 700,
       content: (
@@ -1330,11 +1364,11 @@ export default function DatasetCollection() {
       ),
       okText: `Process All (${discovered.length})`,
       cancelText: 'Cancel',
-        onOk: () => {
-          setUrlQueue(discovered);
-          processUrlQueue();
-        },
-      });
+      onOk: () => {
+        setUrlQueue(discovered);
+        processUrlQueue();
+      },
+    });
   };
 
   // Fallback download in popup (in case service worker download fails on some browsers)
@@ -1360,14 +1394,13 @@ export default function DatasetCollection() {
     try {
       const jsonData = await exportDatasetAsJSON(2);
       const filename = `dark-patterns-dataset-${dayjs().format('YYYY-MM-DD-HHmmss')}.json`;
-      
+
       // Direct download from popup to avoid message size limits
       triggerFallbackDownload(jsonData, filename);
     } catch (error) {
       console.error('Export error before download:', error);
       message.error(
-        `Failed to prepare dataset for export: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to prepare dataset for export: ${error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1390,8 +1423,7 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('Text dataset export error:', error);
       message.error(
-        `Failed to export text-only dataset: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to export text-only dataset: ${error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1429,8 +1461,7 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('Bundle export error:', error);
       message.error(
-        `Failed to build dataset bundle: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to build dataset bundle: ${error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     } finally {
@@ -1445,7 +1476,7 @@ export default function DatasetCollection() {
     }
 
     // Check if entries have bounding boxes
-    const entriesWithBbox = entries.filter(e => 
+    const entriesWithBbox = entries.filter(e =>
       e.patterns.some(p => p.bbox && p.bbox.length === 4)
     );
 
@@ -1483,8 +1514,7 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('UI-TARS export error:', error);
       message.error(
-        `Failed to export UI-TARS dataset: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to export UI-TARS dataset: ${error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     } finally {
@@ -1515,6 +1545,117 @@ export default function DatasetCollection() {
       await loadEntries();
     } catch (error) {
       message.error('Failed to delete entry');
+    }
+  };
+
+  // Export COCO format
+  const handleExportCOCO = async () => {
+    setExportingBundle(true);
+    try {
+      const blob = await exportAsCOCO();
+      const filename = `dark-patterns-coco-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
+      const blobUrl = URL.createObjectURL(blob);
+      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
+        if (chrome.runtime.lastError) {
+          message.error(`Failed to export COCO: ${chrome.runtime.lastError.message}`);
+        } else {
+          message.success('COCO format dataset exported!');
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      });
+    } catch (error) {
+      message.error(`Failed to export COCO: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setExportingBundle(false);
+    }
+  };
+
+  // Export YOLO format
+  const handleExportYOLO = async () => {
+    setExportingBundle(true);
+    try {
+      const blob = await exportAsYOLO();
+      const filename = `dark-patterns-yolo-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
+      const blobUrl = URL.createObjectURL(blob);
+      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
+        if (chrome.runtime.lastError) {
+          message.error(`Failed to export YOLO: ${chrome.runtime.lastError.message}`);
+        } else {
+          message.success('YOLO format dataset exported!');
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      });
+    } catch (error) {
+      message.error(`Failed to export YOLO: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setExportingBundle(false);
+    }
+  };
+
+  // Export annotated images
+  const handleExportAnnotatedImages = async () => {
+    setExportingBundle(true);
+    try {
+      const blob = await exportAnnotatedImages();
+      const filename = `dark-patterns-annotated-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
+      const blobUrl = URL.createObjectURL(blob);
+      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
+        if (chrome.runtime.lastError) {
+          message.error(`Failed to export: ${chrome.runtime.lastError.message}`);
+        } else {
+          message.success('Annotated images exported!');
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      });
+    } catch (error) {
+      message.error(`Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setExportingBundle(false);
+    }
+  };
+
+  // Open bbox editor for an entry
+  const handleEditBboxes = (entry: DatasetEntry) => {
+    if (!entry.screenshot) {
+      message.error('No screenshot available for this entry');
+      return;
+    }
+    setEditingEntry(entry);
+    setShowBboxEditor(true);
+  };
+
+  // Save bbox edits
+  const handleSaveBboxEdits = async (patterns: DarkPattern[]) => {
+    if (!editingEntry) return;
+
+    try {
+      // Re-crop images for updated patterns
+      const patternsWithCrops = await Promise.all(
+        patterns.map(async (p) => {
+          if (p.bbox && p.bbox.length === 4 && editingEntry.screenshot) {
+            try {
+              const croppedImage = await cropImageFromBbox(editingEntry.screenshot, p.bbox);
+              return { ...p, croppedImage };
+            } catch {
+              return p;
+            }
+          }
+          return p;
+        })
+      );
+
+      const updatedEntry: DatasetEntry = {
+        ...editingEntry,
+        patterns: patternsWithCrops,
+      };
+
+      await storeDatasetEntry(updatedEntry);
+      message.success('Bounding boxes updated!');
+      setShowBboxEditor(false);
+      setEditingEntry(null);
+      await loadEntries();
+    } catch (error) {
+      message.error('Failed to save edits');
     }
   };
 
@@ -1562,31 +1703,31 @@ export default function DatasetCollection() {
       <div className="dataset-header">
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col span={6}>
-            <Statistic 
-              title="Websites Scanned" 
+            <Statistic
+              title="Websites Scanned"
               value={statistics.totalEntries}
               prefix={<FileTextOutlined />}
             />
           </Col>
           <Col span={6}>
-            <Statistic 
-              title="Patterns Found" 
+            <Statistic
+              title="Patterns Found"
               value={statistics.totalPatterns}
               prefix={<WarningOutlined />}
             />
           </Col>
           <Col span={6}>
-            <Statistic 
-              title="Prevalence Rate" 
-              value={statistics.prevalenceRate} 
+            <Statistic
+              title="Prevalence Rate"
+              value={statistics.prevalenceRate}
               suffix="%"
               precision={1}
               prefix={<CheckCircleOutlined />}
             />
           </Col>
           <Col span={6}>
-            <Statistic 
-              title="PK E-commerce" 
+            <Statistic
+              title="PK E-commerce"
               value={statistics.pakistaniSitesScanned}
             />
           </Col>
@@ -1677,6 +1818,32 @@ export default function DatasetCollection() {
             Export UI-TARS Format
           </Button>
           <Button
+            icon={<DownloadOutlined />}
+            onClick={handleExportCOCO}
+            loading={exportingBundle}
+            disabled={entries.length === 0}
+            style={{ backgroundColor: '#722ed1', borderColor: '#722ed1', color: '#fff' }}
+          >
+            Export COCO Format
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={handleExportYOLO}
+            loading={exportingBundle}
+            disabled={entries.length === 0}
+            style={{ backgroundColor: '#eb2f96', borderColor: '#eb2f96', color: '#fff' }}
+          >
+            Export YOLO Format
+          </Button>
+          <Button
+            icon={<EyeOutlined />}
+            onClick={handleExportAnnotatedImages}
+            loading={exportingBundle}
+            disabled={entries.length === 0}
+          >
+            Export Annotated Images
+          </Button>
+          <Button
             danger
             icon={<DeleteOutlined />}
             onClick={handleClear}
@@ -1693,30 +1860,30 @@ export default function DatasetCollection() {
             <Text strong style={{ fontSize: '16px' }}>🕷️ Full Website Crawl in Progress</Text>
             <Row gutter={16}>
               <Col span={6}>
-                <Statistic 
-                  title="Discovered" 
+                <Statistic
+                  title="Discovered"
                   value={crawlProgress.discovered}
                   valueStyle={{ color: '#1890ff' }}
                 />
               </Col>
               <Col span={6}>
-                <Statistic 
-                  title="Visited" 
+                <Statistic
+                  title="Visited"
                   value={crawlProgress.visited}
                   valueStyle={{ color: '#52c41a' }}
                 />
               </Col>
               <Col span={6}>
-                <Statistic 
-                  title="In Queue" 
+                <Statistic
+                  title="In Queue"
                   value={crawlProgress.queue}
                   valueStyle={{ color: '#faad14' }}
                 />
               </Col>
             </Row>
             <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: 8 }}>
-              <strong>Current:</strong> {crawlProgress.currentUrl.length > 80 
-                ? crawlProgress.currentUrl.substring(0, 80) + '...' 
+              <strong>Current:</strong> {crawlProgress.currentUrl.length > 80
+                ? crawlProgress.currentUrl.substring(0, 80) + '...'
                 : crawlProgress.currentUrl}
             </Text>
             <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: 4 }}>
@@ -1769,14 +1936,16 @@ export default function DatasetCollection() {
                       {dayjs(entry.timestamp).format('YYYY-MM-DD HH:mm:ss')}
                     </Text>
                   </div>
-                  <Button
-                    danger
-                    size="small"
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(entry.id)}
-                  >
-                    Delete
-                  </Button>
+                  <Space>
+                    <Button
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(entry.id)}
+                    >
+                      Delete
+                    </Button>
+                  </Space>
                 </div>
 
                 {entry.patterns.length === 0 ? (
@@ -1797,35 +1966,7 @@ export default function DatasetCollection() {
                           </Space>
                         }
                       >
-                        {/* INDIVIDUAL CROPPED IMAGE FOR THIS PATTERN ONLY */}
-                        {pattern.croppedImage ? (
-                          <div style={{ marginBottom: 12, textAlign: 'center' }}>
-                            <Image
-                              src={pattern.croppedImage}
-                              alt={`${pattern.type} dark pattern`}
-                              style={{ 
-                                maxWidth: '100%', 
-                                borderRadius: 4, 
-                                border: `2px solid ${getSeverityColor(pattern.severity)}`,
-                                cursor: 'pointer',
-                                display: 'block',
-                                margin: '0 auto'
-                              }}
-                              preview={{ mask: <EyeOutlined /> }}
-                            />
-                            <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: 4 }}>
-                              Individual cropped image showing ONLY this dark pattern
-                            </Text>
-                          </div>
-                        ) : pattern.bbox && pattern.bbox.length === 4 ? (
-                          <Text type="warning" style={{ fontSize: '11px', display: 'block', marginBottom: 8 }}>
-                            ⚠️ Cropped image not available - re-analyze to generate individual image
-                          </Text>
-                        ) : (
-                          <Text type="warning" style={{ fontSize: '11px', display: 'block', marginBottom: 8 }}>
-                            ⚠️ No bounding box - re-analyze to get coordinates and cropped image
-                          </Text>
-                        )}
+                        {/* Image display removed for Text-First strategy */}
 
                         <Paragraph style={{ margin: 0 }}>
                           <Text strong>Location: </Text>
@@ -1857,6 +1998,31 @@ export default function DatasetCollection() {
             </List.Item>
           )}
         />
+      )}
+      {showBboxEditor && editingEntry && editingEntry.screenshot && (
+        <Modal
+          title="Edit Bounding Boxes"
+          open={true}
+          onCancel={() => {
+            setShowBboxEditor(false);
+            setEditingEntry(null);
+          }}
+          footer={null}
+          width="90%"
+          style={{ top: 20 }}
+          bodyStyle={{ height: '80vh', padding: 0 }}
+          destroyOnClose
+        >
+          <BboxEditor
+            screenshot={editingEntry.screenshot}
+            patterns={editingEntry.patterns}
+            onSave={handleSaveBboxEdits}
+            onCancel={() => {
+              setShowBboxEditor(false);
+              setEditingEntry(null);
+            }}
+          />
+        </Modal>
       )}
     </div>
   );

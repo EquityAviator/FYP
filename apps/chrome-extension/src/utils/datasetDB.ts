@@ -294,74 +294,111 @@ export const exportForUITarsFineTuning = async (): Promise<Blob> => {
   const entries = await getDatasetEntries();
   const zip = new JSZip();
   const imagesFolder = zip.folder('images');
-  const annotationsFolder = zip.folder('annotations');
-  const trainingExamples: UITarsTrainingExample[] = [];
 
-  let imageCounter = 0;
+  // UI-TARS standard format interface
+  interface UITarsStandardExample {
+    prompt: string;
+    label: string;
+    image_path: string;
+    category: string;
+    bbox: [number, number, number, number];
+    image_id: number;
+    annotation_id: number;
+  }
 
-  entries.forEach((entry, entryIndex) => {
-    // Process each pattern individually - each gets its own image
-    entry.patterns.forEach((pattern, patternIndex) => {
-      // Only include patterns with cropped images and bounding boxes
-      if (!pattern.croppedImage || !pattern.bbox || pattern.bbox.length !== 4) {
-        return; // Skip patterns without cropped images
+  const jsonlLines: string[] = [];
+  let imageIdCounter = 0;
+  let annotationIdCounter = 0;
+
+  // Helper to normalize coordinates for text description (0-1 range)
+  const normalize = (val: number, total: number) => {
+    return (val / total).toFixed(3);
+  };
+
+  // Helper to get image dimensions
+  const getImageDimensions = (dataUrl: string): Promise<{ w: number; h: number }> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.width, h: img.height });
+      img.onerror = () => resolve({ w: 1920, h: 1080 }); // Fallback
+      img.src = dataUrl;
+    });
+  };
+
+  // Process entries sequentially to await image loading
+  for (let entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+    const entry = entries[entryIndex];
+
+    // Skip entries without valid screenshot or patterns
+    if (!entry.screenshot || !entry.patterns || entry.patterns.length === 0) {
+      continue;
+    }
+
+    // Get actual image dimensions to ensure correct normalization (handles DPR scaling)
+    const { w: width, h: height } = await getImageDimensions(entry.screenshot);
+
+    const safeId = sanitizeFilename(entry.id, `entry_${entryIndex + 1}`);
+    const imageFileName = `${safeId}.png`;
+    let imagePath = `images/${imageFileName}`;
+
+    // Save FULL screenshot (shared by all patterns in this page)
+    if (imagesFolder) {
+      const match = entry.screenshot.match(/^data:(.*?);base64,(.*)$/);
+      const base64Payload = match ? match[2] : null;
+      if (base64Payload) {
+        imagesFolder.file(imageFileName, base64Payload, { base64: true });
+        // Update path to be absolute-like or relative as needed by user's training setup
+        // For portability in zip, we use relative path inside zip
+        imagePath = `images/${imageFileName}`;
       }
+    }
 
-      imageCounter++;
-      const safeId = sanitizeFilename(entry.id, `entry_${entryIndex + 1}`);
-      const imageFileName = `${safeId}_pattern_${patternIndex + 1}_${sanitizeFilename(pattern.type, 'pattern')}.png`;
-      let imagePath: string | null = null;
+    const currentImageId = imageIdCounter++;
 
-      // Extract and save INDIVIDUAL cropped image for THIS pattern only
-      if (pattern.croppedImage && imagesFolder) {
-        const match = pattern.croppedImage.match(/^data:(.*?);base64,(.*)$/);
-        const base64Payload = match ? match[2] : null;
-        if (base64Payload) {
-          imagesFolder.file(imageFileName, base64Payload, { base64: true });
-          imagePath = `images/${imageFileName}`;
-        }
-      }
+    // Create one training example per pattern (Standard UI-TARS format)
+    entry.patterns.forEach((pattern) => {
+      // Validate bbox
+      if (!pattern.bbox || pattern.bbox.length !== 4) return;
 
-      // Create training example - ONE example per pattern with its own image
-      const example: UITarsTrainingExample = {
-        image_path: imagePath || '',
-        pattern_type: pattern.type,
-        bbox: pattern.bbox, // Original bbox coordinates from full screenshot
-        label: pattern.type,
-        severity: pattern.severity,
-        evidence: pattern.evidence,
-        metadata: {
-          url: entry.url,
-          page_title: entry.metadata?.pageTitle,
-          site_name: entry.metadata?.researchContext?.siteName,
-          original_entry_id: entry.id,
-        },
+      const [x, y, w, h] = pattern.bbox;
+
+      // Calculate normalized coordinates for description
+      const normX = normalize(x, width);
+      const normY = normalize(y, height);
+      const normW = normalize(w, width);
+      const normH = normalize(h, height);
+
+      // Construct proper UI-TARS prompt and response
+      const systemPrompt =
+        '[SYSTEM] You are UI-TARS, an assistant that detects deceptive dark patterns in web interfaces.\n\n[INSTRUCTION] Analyze this webpage screenshot and identify any dark patterns present.\n\n[SCREENSHOT] ' +
+        imagePath +
+        '\n\n[RESPONSE]';
+
+      const category = pattern.type.toUpperCase().replace(/ /g, '_'); // e.g., "ACTIVITY MESSAGE"
+
+      const label = `I detected a ${pattern.type.toLowerCase()} dark pattern in this screenshot. ${pattern.type}: ${pattern.description}. The pattern is located at coordinates (${normX}, ${normY}) with dimensions ${normW} x ${normH} (normalized to image size).`;
+
+      const example: UITarsStandardExample = {
+        prompt: systemPrompt,
+        label: label,
+        image_path: imagePath, // Use relative path in zip
+        category: category,
+        bbox: [x, y, w, h],
+        image_id: currentImageId,
+        annotation_id: annotationIdCounter++,
       };
 
-      trainingExamples.push(example);
-
-      // Save individual annotation file for this pattern
-      if (annotationsFolder) {
-        annotationsFolder.file(
-          `${safeId}_pattern_${patternIndex + 1}.json`,
-          JSON.stringify(example, null, 2)
-        );
-      }
+      jsonlLines.push(JSON.stringify(example));
     });
-  });
+  }
 
-  // Create training dataset JSONL (one example per line - each line = one pattern with its own image)
-  const trainingJsonl = trainingExamples
-    .map(ex => JSON.stringify(ex))
-    .join('\n');
-
-  zip.file('train.jsonl', trainingJsonl);
+  zip.file('processed.jsonl', jsonlLines.join('\n'));
   zip.file('dataset_info.json', JSON.stringify({
-    total_images: imageCounter, // Number of individual cropped images
-    total_patterns: trainingExamples.length, // Same as total_images (one image per pattern)
-    pattern_types: [...new Set(trainingExamples.map(ex => ex.pattern_type))],
+    total_images: imageIdCounter,
+    total_annotations: annotationIdCounter,
     created_at: new Date().toISOString(),
-    format: 'individual_cropped_images', // Each pattern has its own cropped image
+    format: 'uitars_standard_web',
+    notes: 'Full screenshots with bounding box annotations in UI-TARS JSONL format.'
   }, null, 2));
 
   return zip.generateAsync({ type: 'blob' });
