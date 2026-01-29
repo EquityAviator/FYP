@@ -77,10 +77,12 @@ const TRACKING_ACTIVE_TAB_KEY = 'midscene-tracking-active-tab';
 const DEEP_THINK_KEY = 'midscene-deep-think';
 const SCREENSHOT_INCLUDED_KEY = 'midscene-screenshot-included';
 const DOM_INCLUDED_KEY = 'midscene-dom-included';
+
 const getConfigStringFromLocalStorage = () => {
   const configString = localStorage.getItem(CONFIG_KEY);
   return configString || '';
 };
+
 const parseConfig = (configString: string) => {
   const lines = configString.split('\n');
   const config: Record<string, string> = {};
@@ -119,6 +121,9 @@ const parseConfig = (configString: string) => {
  * - In-Browser-Extension: use browser's fetch API to run the code, but the page is running in the extension context
  */
 export type ServiceModeType = 'Server' | 'In-Browser' | 'In-Browser-Extension'; // | 'Extension';
+
+export type PopupTabType = 'playground' | 'bridge' | 'recorder' | 'dataset' | 'live-guard';
+
 export const useEnvConfig = create<{
   serviceMode: ServiceModeType;
   setServiceMode: (serviceMode: ServiceModeType) => void;
@@ -135,8 +140,8 @@ export const useEnvConfig = create<{
   setScreenshotIncluded: (screenshotIncluded: boolean) => void;
   domIncluded: boolean | 'visible-only';
   setDomIncluded: (domIncluded: boolean | 'visible-only') => void;
-  popupTab: 'playground' | 'bridge' | 'recorder';
-  setPopupTab: (tab: 'playground' | 'bridge' | 'recorder') => void;
+  popupTab: PopupTabType;
+  setPopupTab: (tab: PopupTabType) => void;
 }>((set, get) => {
   const configString = getConfigStringFromLocalStorage();
   const config = parseConfig(configString);
@@ -203,7 +208,7 @@ export const useEnvConfig = create<{
       localStorage.setItem(DOM_INCLUDED_KEY, domIncluded.toString());
     },
     popupTab: 'playground',
-    setPopupTab: (tab: 'playground' | 'bridge' | 'recorder') => {
+    setPopupTab: (tab: PopupTabType) => {
       set({ popupTab: tab });
     },
   };

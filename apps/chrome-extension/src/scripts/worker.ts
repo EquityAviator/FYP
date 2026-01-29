@@ -21,6 +21,13 @@ interface WorkerRequestGetContext {
 // console-browserify won't work in worker, so we need to use globalThis.console
 const console = globalThis.console;
 
+// Live Guard message types
+const LIVE_GUARD_MESSAGES = {
+  SCAN_PAGE: 'live-guard-scan-page',
+  CLEAR_HIGHLIGHTS: 'live-guard-clear-highlights',
+  SHOW_HIGHLIGHTS: 'live-guard-show-highlights',
+} as const;
+
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error(error));
@@ -44,6 +51,20 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Handle Live Guard scan request
+  if (request.action === LIVE_GUARD_MESSAGES.SCAN_PAGE) {
+    console.log('[ServiceWorker] Live Guard scan request received');
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // Handle Live Guard clear highlights request
+  if (request.action === LIVE_GUARD_MESSAGES.CLEAR_HIGHLIGHTS) {
+    console.log('[ServiceWorker] Live Guard clear highlights request received');
+    sendResponse({ success: true });
+    return true;
+  }
+
   // Handle screenshot capture request
   if (request.action === 'captureScreenshot') {
     if (sender.tab && sender.tab.id !== undefined) {

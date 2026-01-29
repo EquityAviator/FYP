@@ -3,6 +3,7 @@ import {
   ApiOutlined,
   DatabaseOutlined,
   MenuOutlined,
+  SafetyOutlined,
   SendOutlined,
   SettingOutlined,
   VideoCameraOutlined,
@@ -18,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { BrowserExtensionPlayground } from '../../components/playground';
 import Bridge from '../bridge';
 import DatasetCollection from '../dataset-collection';
+import LiveGuard from '../live-guard';
 import Recorder from '../recorder';
 import { Settings } from '../settings';
 import './index.less';
@@ -44,7 +46,7 @@ const STORAGE_KEY = 'midscene-popup-mode';
 export function PlaygroundPopup() {
   const { setPopupTab, config } = useEnvConfig();
   const [currentMode, setCurrentMode] = useState<
-    'playground' | 'bridge' | 'recorder' | 'dataset' | 'settings'
+    'playground' | 'bridge' | 'recorder' | 'dataset' | 'live-guard' | 'settings'
   >(() => {
     const savedMode = localStorage.getItem(STORAGE_KEY);
     return (
@@ -53,6 +55,7 @@ export function PlaygroundPopup() {
         | 'bridge'
         | 'recorder'
         | 'dataset'
+        | 'live-guard'
         | 'settings') || 'playground'
     );
   });
@@ -148,7 +151,17 @@ export function PlaygroundPopup() {
       label: 'Dataset Collection',
       onClick: () => {
         setCurrentMode('dataset');
+        setPopupTab('dataset');
         localStorage.setItem(STORAGE_KEY, 'dataset');
+      },
+    },
+    {
+      key: 'live-guard',
+      icon: <SafetyOutlined />,
+      label: 'Live Guard',
+      onClick: () => {
+        setCurrentMode('live-guard');
+        localStorage.setItem(STORAGE_KEY, 'live-guard');
       },
     },
     {
@@ -186,6 +199,13 @@ export function PlaygroundPopup() {
       return (
         <div className="popup-content dataset-mode">
           <DatasetCollection />
+        </div>
+      );
+    }
+    if (currentMode === 'live-guard') {
+      return (
+        <div className="popup-content live-guard-mode">
+          <LiveGuard />
         </div>
       );
     }
@@ -239,7 +259,9 @@ export function PlaygroundPopup() {
                     ? 'Bridge Mode'
                     : currentMode === 'dataset'
                       ? 'Dataset Collection'
-                      : 'Settings'}
+                      : currentMode === 'live-guard'
+                        ? 'Live Guard'
+                        : 'Settings'}
             </span>
           </div>
           <div className="nav-right">
