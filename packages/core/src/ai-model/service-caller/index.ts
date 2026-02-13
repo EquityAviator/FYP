@@ -603,3 +603,16 @@ export function safeParseJson(input: string, vlMode: TVlModeTypes | undefined) {
   }
   throw Error(`failed to parse json response: ${input}`);
 }
+
+// Export LM Studio discovery functions
+export {
+  discoverLMStudioModels,
+  isLMStudioServerRunning,
+  getFirstAvailableModel,
+  getModelIds,
+} from './lm-studio-discovery';
+export type {
+  LMStudioModel,
+  LMStudioModelsResponse,
+  ModelDiscoveryResult,
+} from './lm-studio-discovery';

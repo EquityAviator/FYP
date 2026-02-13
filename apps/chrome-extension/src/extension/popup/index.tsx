@@ -182,7 +182,7 @@ export function PlaygroundPopup() {
     if (currentMode === 'bridge') {
       return (
         <div className="popup-content bridge-mode">
-          <div className="bridge-container">
+          <div className="module-container">
             <Bridge />
           </div>
         </div>
@@ -191,28 +191,36 @@ export function PlaygroundPopup() {
     if (currentMode === 'recorder') {
       return (
         <div className="popup-content recorder-mode">
-          <Recorder />
+          <div className="module-container">
+            <Recorder />
+          </div>
         </div>
       );
     }
     if (currentMode === 'dataset') {
       return (
         <div className="popup-content dataset-mode">
-          <DatasetCollection />
+          <div className="module-container">
+            <DatasetCollection />
+          </div>
         </div>
       );
     }
     if (currentMode === 'live-guard') {
       return (
         <div className="popup-content live-guard-mode">
-          <LiveGuard />
+          <div className="module-container">
+            <LiveGuard />
+          </div>
         </div>
       );
     }
     if (currentMode === 'settings') {
       return (
         <div className="popup-content settings-mode">
-          <Settings />
+          <div className="module-container">
+            <Settings />
+          </div>
         </div>
       );
     }
@@ -220,7 +228,7 @@ export function PlaygroundPopup() {
     return (
       <div className="popup-content">
         {/* Playground Component */}
-        <div className="playground-component">
+        <div className="module-container playground-component">
           <BrowserExtensionPlayground
             getAgent={(forceSameTabNavigation?: boolean) => {
               console.log(

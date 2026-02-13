@@ -35,6 +35,7 @@ export default defineConfig({
           'stop-water-flow': './src/scripts/stop-water-flow.ts',
           'water-flow': './src/scripts/water-flow.ts',
           'event-recorder-bridge': './src/scripts/event-recorder-bridge.ts',
+          'guard-highlighter': './src/extension/live-guard/guardHighlighter.ts',
         },
       },
       output: {

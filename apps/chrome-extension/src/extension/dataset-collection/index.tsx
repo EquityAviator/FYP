@@ -34,7 +34,7 @@ import {
   callAIWithObjectResponse,
   type AIArgs,
 } from '@darkpatternhunter/core/ai-model';
-import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
+import { getDebug } from '@darkpatternhunter/shared/logger';
 import type { IModelConfig } from '@darkpatternhunter/shared/env';
 import {
   clearDatasetEntries,
@@ -53,9 +53,12 @@ import { isPakistaniEcommerceSite, getSiteName, validateUrl } from '../../utils/
 import { exportAsCOCO, exportAsYOLO, exportAnnotatedImages } from '../../utils/cocoYoloExport';
 import { drawBboxesOnImage } from '../../utils/bboxOverlay';
 import BboxEditor from './BboxEditor';
+import { getActiveModelConfig, getAIConfig } from '../../utils/aiConfig';
+import { useGlobalAIConfig } from '../../hooks/useGlobalAIConfig';
 import './index.less';
 
 const { Text, Paragraph } = Typography;
+const debug = getDebug('dataset-collection');
 
 // Enhanced dark pattern detection prompt for Pakistani e-commerce
 const DARK_PATTERN_PROMPT = `You are a Dark Pattern Detection AI expert specializing in Pakistani e-commerce websites.
@@ -133,7 +136,6 @@ export default function DatasetCollection() {
   } | null>(null);
   const [urlQueue, setUrlQueue] = useState<string[]>([]);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
-  const [modelConfigError, setModelConfigError] = useState<string | null>(null);
   const [filterPattern, setFilterPattern] = useState<string>('ALL');
   const [isRecursiveCrawling, setIsRecursiveCrawling] = useState(false);
   const [crawlProgress, setCrawlProgress] = useState<{
@@ -158,33 +160,18 @@ export default function DatasetCollection() {
   const [editingEntry, setEditingEntry] = useState<DatasetEntry | null>(null);
   const [showBboxEditor, setShowBboxEditor] = useState(false);
 
+  // Use global AI configuration hook
+  const { readyState } = useGlobalAIConfig();
+
   // Load entries on mount
   useEffect(() => {
     loadEntries();
-    validateModelConfig();
   }, []);
 
   // Calculate statistics when entries change
   useEffect(() => {
     calculateStatistics();
   }, [entries]);
-
-  const validateModelConfig = () => {
-    try {
-      const config = globalModelConfigManager.getModelConfig('default');
-      if (!config || !config.modelName) {
-        setModelConfigError('AI model not configured. Please configure in settings.');
-        return;
-      }
-      if (!config.openaiApiKey && !config.openaiBaseURL) {
-        setModelConfigError('OpenAI API key or base URL not configured.');
-        return;
-      }
-      setModelConfigError(null);
-    } catch (error) {
-      setModelConfigError('Failed to validate model configuration.');
-    }
-  };
 
   const calculateStatistics = () => {
     const totalEntries = entries.length;
@@ -337,10 +324,11 @@ export default function DatasetCollection() {
   const analyzePageForDarkPatterns = async (
     screenshot: string,
     dom: string,
-    modelConfig: IModelConfig,
     url: string,
     retries = 3,
   ): Promise<{ patterns: DarkPattern[]; summary?: any }> => {
+    // Get active model config from centralized storage
+    const modelConfig = await getActiveModelConfig();
     // This function will crop individual images for each pattern
     const messageContent: AIArgs[0]['content'] = [
       {
@@ -481,10 +469,11 @@ export default function DatasetCollection() {
   };
 
   const analyzeCurrentPage = async () => {
-    if (modelConfigError) {
+    // Validate model configuration using centralized config
+    if (!readyState.isReady) {
       Modal.warning({
         title: 'Model Configuration Required',
-        content: modelConfigError + ' Please configure your AI model settings first.',
+        content: readyState.errorMessage + ' Please configure your AI model settings first.',
       });
       return;
     }
@@ -553,7 +542,7 @@ export default function DatasetCollection() {
 
       message.loading({ content: 'Analyzing for dark patterns with AI...', key: 'analysis', duration: 0 });
 
-      const modelConfig = globalModelConfigManager.getModelConfig('default');
+      const modelConfig = await getActiveModelConfig();
       if (!modelConfig || !modelConfig.modelName) {
         throw new Error('AI model not configured');
       }
@@ -561,7 +550,6 @@ export default function DatasetCollection() {
       const { patterns, summary } = await analyzePageForDarkPatterns(
         screenshot,
         dom,
-        modelConfig,
         url,
       );
 
@@ -618,17 +606,16 @@ export default function DatasetCollection() {
   const processUrlQueue = async () => {
     if (urlQueue.length === 0 || isProcessingQueue) return;
 
-    if (modelConfigError) {
+    if (!readyState.isReady) {
       Modal.warning({
         title: 'Model Configuration Required',
-        content: modelConfigError + ' Please configure your AI model settings first.',
+        content: readyState.errorMessage + ' Please configure your AI model settings first.',
       });
       return;
     }
 
     setIsProcessingQueue(true);
-    const modelConfig = globalModelConfigManager.getModelConfig('default');
-
+    const modelConfig = await getActiveModelConfig();
     if (!modelConfig || !modelConfig.modelName) {
       message.error('AI model not configured');
       setIsProcessingQueue(false);
@@ -683,7 +670,6 @@ export default function DatasetCollection() {
         const { patterns, summary } = await analyzePageForDarkPatterns(
           screenshot,
           dom,
-          modelConfig,
           url,
         );
 
@@ -1685,16 +1671,16 @@ export default function DatasetCollection() {
 
   return (
     <div className="dataset-collection-container">
-      {modelConfigError && (
+      {!readyState.isReady && readyState.errorMessage && (
         <Alert
           message="Configuration Required"
-          description={modelConfigError}
+          description={readyState.errorMessage}
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
           action={
-            <Button size="small" onClick={() => validateModelConfig()}>
-              Check Again
+            <Button size="small" onClick={() => window.location.reload()}>
+              Refresh
             </Button>
           }
         />
@@ -1767,21 +1753,21 @@ export default function DatasetCollection() {
             icon={<PlayCircleOutlined />}
             onClick={analyzeCurrentPage}
             loading={analyzing}
-            disabled={!!modelConfigError}
+            disabled={!readyState.isReady}
           >
             Analyze Current Page
           </Button>
           <Button
             icon={<FileTextOutlined />}
             onClick={handleBatchProcess}
-            disabled={isProcessingQueue || !!modelConfigError}
+            disabled={isProcessingQueue || !readyState.isReady}
           >
             Batch Process (Manual URLs)
           </Button>
           <Button
             icon={<FileTextOutlined />}
             onClick={handleAutoDiscoverLinks}
-            disabled={isProcessingQueue || isRecursiveCrawling || !!modelConfigError}
+            disabled={isProcessingQueue || isRecursiveCrawling || !readyState.isReady}
           >
             {isRecursiveCrawling ? '🕷️ Crawling Website...' : 'Batch Process (Auto Crawl)'}
           </Button>

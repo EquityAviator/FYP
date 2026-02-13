@@ -2,6 +2,10 @@ export {
   callAIWithStringResponse,
   callAIWithObjectResponse,
   callAI,
+  discoverLMStudioModels,
+  isLMStudioServerRunning,
+  getFirstAvailableModel,
+  getModelIds,
 } from './service-caller/index';
 export { systemPromptToLocateElement } from './prompt/llm-locator';
 export {
@@ -50,3 +54,9 @@ export {
   loadActionParam,
   parseActionParam,
 } from './common';
+
+export type {
+  LMStudioModel,
+  LMStudioModelsResponse,
+  ModelDiscoveryResult,
+} from './service-caller/lm-studio-discovery';

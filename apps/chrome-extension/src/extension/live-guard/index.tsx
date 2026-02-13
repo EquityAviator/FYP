@@ -5,13 +5,19 @@
 
 import { SafetyOutlined, ClearOutlined } from '@ant-design/icons';
 import './index.less';
-import { Button, Card, message, Space, Spin, Typography } from 'antd';
+import { Button, Card, message, Space, Spin, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { getDarkPatternPrompt } from '../../utils/analysisEngine';
-import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { getDebug } from '@darkpatternhunter/shared/logger';
 import type { ChatCompletionMessageParam } from 'openai/resources/index';
 import { AIActionType, callAIWithObjectResponse } from '@darkpatternhunter/core/ai-model';
+import {
+  getActiveModelConfig,
+  getAIConfig,
+  isLocalServerReachable,
+  type AIConfig,
+} from '../../utils/aiConfig';
+import { useGlobalAIConfig } from '../../hooks/useGlobalAIConfig';
 
 const { Title, Text, Paragraph } = Typography;
 const debug = getDebug('live-guard');
@@ -21,6 +27,7 @@ const LIVE_GUARD_MESSAGES = {
   SCAN_PAGE: 'live-guard-scan-page',
   CLEAR_HIGHLIGHTS: 'live-guard-clear-highlights',
   SHOW_HIGHLIGHTS: 'live-guard-show-highlights',
+  FOCUS_PATTERN: 'live-guard-focus-pattern',
 } as const;
 
 // Dark pattern detection result interface
@@ -50,6 +57,9 @@ export function LiveGuard() {
   const [detectedPatterns, setDetectedPatterns] = useState<DetectedPattern[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Use global AI configuration hook
+  const { config, readyState, isLoading: isConfigLoading } = useGlobalAIConfig();
+
   /**
    * Capture current tab screenshot and DOM
    */
@@ -58,6 +68,7 @@ export function LiveGuard() {
     dom: string;
     url: string;
     title: string;
+    screenshotSize: { width: number; height: number };
   } | null> => {
     try {
       // Get current tab
@@ -81,6 +92,19 @@ export function LiveGuard() {
         );
       });
 
+      // Get screenshot dimensions
+      const img = new Image();
+      const imgPromise = new Promise<{ width: number; height: number }>(
+        (resolve, reject) => {
+          img.onload = () => {
+            resolve({ width: img.width, height: img.height });
+          };
+          img.onerror = () => reject(new Error('Failed to load screenshot'));
+          img.src = screenshot;
+        },
+      );
+      const screenshotSize = await imgPromise;
+
       // Get DOM and page info
       const result = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -96,6 +120,7 @@ export function LiveGuard() {
       if (result?.[0]?.result) {
         return {
           screenshot,
+          screenshotSize,
           ...result[0].result,
         };
       }
@@ -116,12 +141,25 @@ export function LiveGuard() {
     setDetectedPatterns([]);
 
     try {
+      // Check if AI is ready using global config
+      if (!readyState.isReady) {
+        throw new Error(readyState.errorMessage || 'AI not configured');
+      }
+
+      // Get current AI configuration
+      const currentConfig = await getAIConfig();
+
       const pageData = await capturePageData();
       if (!pageData) {
         throw new Error('Failed to capture page data');
       }
 
       debug('Analyzing page:', pageData.url);
+      debug('Using provider:', currentConfig.provider);
+      debug('Using model:', currentConfig.selectedModel);
+
+      // Get active model config
+      const modelConfig = await getActiveModelConfig();
 
       // Prepare AI messages
       const messages: ChatCompletionMessageParam[] = [
@@ -145,7 +183,28 @@ This is a live scan for consumer protection. Focus on patterns that:
 3. Make it difficult to opt-out or cancel
 4. Use deceptive design to manipulate user choices
 
-For each detected pattern, provide a counterMeasure field with actionable advice for the user.`,
+For each detected pattern, provide a counterMeasure field with actionable advice for user.
+
+IMPORTANT: Return a JSON object with the following structure:
+{
+  "patterns": [
+    {
+      "type": "Pattern Type (e.g., 'Pressured Selling / FOMO / Urgency')",
+      "description": "Brief description of pattern",
+      "severity": "low|medium|high|critical",
+      "location": "Where on the page this pattern appears",
+      "evidence": "What makes this a dark pattern",
+      "confidence": 0.0-1.0,
+      "bbox": [x, y, width, height], // Bounding box coordinates in pixels
+      "counterMeasure": "Short, actionable advice for user (English/Urdu)"
+    }
+  ],
+  "summary": {
+    "total_patterns": number,
+    "prevalence_score": 0.0-1.0,
+    "primary_categories": ["category1", "category2"]
+  }
+}`,
             },
             {
               type: 'image_url',
@@ -157,8 +216,7 @@ For each detected pattern, provide a counterMeasure field with actionable advice
         },
       ];
 
-      // Call AI
-      const modelConfig = globalModelConfigManager.getModelConfig('default');
+      // Call AI with active model config
       const response = await callAIWithObjectResponse<LiveGuardDetectionResponse>(
         messages,
         AIActionType.EXTRACT_DATA,
@@ -166,19 +224,23 @@ For each detected pattern, provide a counterMeasure field with actionable advice
       );
 
       // Add counter-measures to patterns if not provided
-      const patternsWithCounterMeasures = response.content.patterns.map((pattern) => ({
-        ...pattern,
-        counterMeasure: pattern.counterMeasure || generateCounterMeasure(pattern),
-      }));
+      const patternsWithCounterMeasures = response.content.patterns.map(
+        (pattern) => ({
+          ...pattern,
+          counterMeasure: pattern.counterMeasure || generateCounterMeasure(pattern),
+        }),
+      );
 
       setDetectedPatterns(patternsWithCounterMeasures);
 
-      // Send highlights to content script
+      // Send highlights to content script with screenshot size
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, {
           action: LIVE_GUARD_MESSAGES.SHOW_HIGHLIGHTS,
           patterns: patternsWithCounterMeasures,
+          screenshotSize: pageData.screenshotSize,
+          isNormalized: true, // AI returns normalized coordinates (0-1000)
         });
       }
 
@@ -254,6 +316,24 @@ For each detected pattern, provide a counterMeasure field with actionable advice
     }
   };
 
+  /**
+   * Focus on a specific pattern highlight
+   * Sends message to content script to change highlight color and scroll element into view
+   */
+  const focusPattern = async (patternIndex: number) => {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          action: LIVE_GUARD_MESSAGES.FOCUS_PATTERN,
+          patternIndex,
+        });
+      }
+    } catch (err) {
+      debug('Failed to focus pattern:', err);
+    }
+  };
+
   return (
     <div className="live-guard-container">
       <Card>
@@ -265,6 +345,12 @@ For each detected pattern, provide a counterMeasure field with actionable advice
             <Paragraph type="secondary">
               Real-time dark pattern detection and consumer protection
             </Paragraph>
+            {config && config.provider === 'local' && config.selectedModel && (
+              <Tag color="blue">Using Local AI: {config.selectedModel}</Tag>
+            )}
+            {!readyState.isReady && !isConfigLoading && (
+              <Tag color="error">{readyState.errorMessage}</Tag>
+            )}
           </div>
 
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -316,6 +402,13 @@ For each detected pattern, provide a counterMeasure field with actionable advice
                               ? '#ffa940'
                               : '#52c41a'
                       }`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={() => focusPattern(index)}
+                    onMouseLeave={() => {
+                      // Optional: Reset highlights when mouse leaves
+                      // Currently keeping the focus for better UX
                     }}
                   >
                     <Text strong>{pattern.type}</Text>

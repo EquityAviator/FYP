@@ -1,16 +1,32 @@
 /**
- * Guard Highlighter Content Script
- * Draws semi-transparent red overlays over detected dark patterns
- * Ensures overlays are scroll-aware and don't modify website's original CSS
+ * Live Guard Content Script
+ * Handles highlighting of detected dark patterns on the page using Shadow DOM
  */
 
-// Message types
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import {
+  getCanvasToDomCoords,
+  getScrollPosition,
+  getViewportSize,
+  getDevicePixelRatio,
+  isValidBbox,
+  type BBox,
+  type ScreenshotSize,
+  type ViewportSize,
+  type ScrollPosition,
+} from '../../utils/coordinateMapping';
+
+const debug = getDebug('live-guard-content');
+
+// Message types for Live Guard
 const LIVE_GUARD_MESSAGES = {
-  SHOW_HIGHLIGHTS: 'live-guard-show-highlights',
+  SCAN_PAGE: 'live-guard-scan-page',
   CLEAR_HIGHLIGHTS: 'live-guard-clear-highlights',
+  SHOW_HIGHLIGHTS: 'live-guard-show-highlights',
+  FOCUS_PATTERN: 'live-guard-focus-pattern',
 } as const;
 
-// Pattern data interface
+// Dark pattern detection result interface
 interface DetectedPattern {
   type: string;
   description: string;
@@ -22,291 +38,495 @@ interface DetectedPattern {
   counterMeasure: string;
 }
 
-// Overlay element interface
-interface PatternOverlay {
-  id: string;
-  element: HTMLDivElement;
-  pattern: DetectedPattern;
-  tooltip: HTMLDivElement;
+// Extended pattern interface with screenshot metadata
+interface PatternWithMetadata extends DetectedPattern {
+  screenshotSize?: ScreenshotSize;
+  isNormalized?: boolean;
 }
 
-// Store active overlays
-const activeOverlays = new Map<string, PatternOverlay>();
-
-// Container for all overlays
-let overlayContainer: HTMLDivElement | null = null;
+// Store current highlights
+let currentHighlights: HTMLElement[] = [];
+let shadowHost: HTMLElement | null = null;
+let shadowRoot: ShadowRoot | null = null;
+let currentScreenshotSize: ScreenshotSize | null = null;
 
 /**
- * Create overlay container with Shadow DOM for isolation
+ * Initialize Shadow DOM for highlights
  */
-function createOverlayContainer(): HTMLDivElement {
-  if (overlayContainer) {
-    return overlayContainer;
+function initShadowDOM(): void {
+  if (shadowHost && shadowRoot) {
+    return; // Already initialized
   }
 
-  const container = document.createElement('div');
-  container.id = 'live-guard-overlay-container';
-  container.style.cssText = `
+  // Create a host element for the shadow DOM
+  shadowHost = document.createElement('div');
+  shadowHost.id = 'live-guard-shadow-host';
+  shadowHost.style.cssText = `
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 2147483647;
-    overflow: hidden;
+    z-index: 999999;
   `;
 
-  document.body.appendChild(container);
-  overlayContainer = container;
+  // Attach shadow DOM
+  shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 
-  return container;
-}
-
-/**
- * Create a semi-transparent red overlay for a pattern
- */
-function createPatternOverlay(
-  pattern: DetectedPattern,
-  index: number,
-): PatternOverlay {
-  const container = createOverlayContainer();
-
-  // Create overlay element
-  const overlay = document.createElement('div');
-  overlay.id = `live-guard-overlay-${index}`;
-  overlay.className = 'live-guard-pattern-overlay';
-
-  // Set position based on bbox
-  if (pattern.bbox && pattern.bbox.length === 4) {
-    const [x, y, width, height] = pattern.bbox;
-    overlay.style.cssText = `
+  // Add styles to shadow DOM
+  const style = document.createElement('style');
+  style.textContent = `
+    .live-guard-highlight {
       position: absolute;
-      left: ${x}px;
-      top: ${y}px;
-      width: ${width}px;
-      height: ${height}px;
-      background-color: rgba(255, 77, 79, 0.3);
-      border: 2px solid rgba(255, 77, 79, 0.8);
+      border: 2px solid;
       border-radius: 4px;
       pointer-events: auto;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
-    `;
-  } else {
-    // Fallback: center overlay if no bbox
-    overlay.style.cssText = `
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      animation: liveGuardPulse 2s infinite;
+    }
+
+    .live-guard-highlight:hover {
+      filter: brightness(1.2);
+      transform: scale(1.02);
+    }
+
+    @keyframes liveGuardPulse {
+      0%, 100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+
+    .live-guard-tooltip {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      padding: 16px;
-      background-color: rgba(255, 77, 79, 0.3);
-      border: 2px solid rgba(255, 77, 79, 0.8);
+      background: white;
+      border: 1px solid #d9d9d9;
       border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000000;
+      max-width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      animation: liveGuardFadeIn 0.3s ease;
       pointer-events: auto;
-      cursor: pointer;
-      z-index: 2147483647;
-    `;
-  }
+    }
 
-  // Create tooltip
-  const tooltip = createTooltip(pattern);
-  overlay.appendChild(tooltip);
+    @keyframes liveGuardFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-  // Add hover events
-  overlay.addEventListener('mouseenter', () => {
-    tooltip.style.opacity = '1';
-    tooltip.style.visibility = 'visible';
-  });
+    .live-guard-tooltip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
 
-  overlay.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = '0';
-    tooltip.style.visibility = 'hidden';
-  });
+    .live-guard-severity-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
 
-  // Add click event to show tooltip permanently
-  overlay.addEventListener('click', (e) => {
-    e.stopPropagation();
-    tooltip.style.opacity = '1';
-    tooltip.style.visibility = 'visible';
-    
-    // Hide after 5 seconds
-    setTimeout(() => {
-      tooltip.style.opacity = '0';
-      tooltip.style.visibility = 'hidden';
-    }, 5000);
-  });
+    .live-guard-severity-badge.critical {
+      background: #ff4d4f;
+      color: white;
+    }
 
-  container.appendChild(overlay);
+    .live-guard-severity-badge.high {
+      background: #ff7a45;
+      color: white;
+    }
 
-  return {
-    id: `overlay-${index}`,
-    element: overlay,
-    pattern,
-    tooltip,
-  };
+    .live-guard-severity-badge.medium {
+      background: #ffa940;
+      color: white;
+    }
+
+    .live-guard-severity-badge.low {
+      background: #52c41a;
+      color: white;
+    }
+
+    .live-guard-tooltip-body p {
+      margin: 0 0 8px 0;
+      color: #595959;
+    }
+
+    .live-guard-counter-measure {
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 4px;
+      padding: 8px;
+      margin-top: 8px;
+    }
+
+    .live-guard-counter-measure strong {
+      color: #389e0d;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .live-guard-counter-measure p {
+      margin: 0;
+      color: #389e0d;
+    }
+  `;
+  shadowRoot.appendChild(style);
+
+  // Append host to document body
+  document.body.appendChild(shadowHost);
+
+  debug('Shadow DOM initialized');
 }
 
 /**
- * Create tooltip for pattern
+ * Clear all highlights from the page
  */
-function createTooltip(pattern: DetectedPattern): HTMLDivElement {
+function clearHighlights(): void {
+  currentHighlights.forEach((highlight) => {
+    highlight.remove();
+  });
+  currentHighlights = [];
+
+  // Remove tooltip if exists
+  const tooltip = shadowRoot?.querySelector('.live-guard-tooltip');
+  if (tooltip) {
+    tooltip.remove();
+  }
+
+  debug('Cleared all highlights');
+}
+
+/**
+ * Get color based on severity
+ */
+function getSeverityColor(severity: string): { bg: string; border: string } {
+  const colors = {
+    critical: { bg: 'rgba(255, 77, 79, 0.3)', border: '#ff4d4f' },
+    high: { bg: 'rgba(255, 122, 69, 0.3)', border: '#ff7a45' },
+    medium: { bg: 'rgba(255, 169, 64, 0.3)', border: '#ffa940' },
+    low: { bg: 'rgba(82, 196, 26, 0.3)', border: '#52c41a' },
+  };
+  return colors[severity as keyof typeof colors] || colors.low;
+}
+
+/**
+ * Create a highlight overlay for a detected pattern
+ * Uses high-precision coordinate mapping to snap to actual DOM elements
+ */
+function createHighlightOverlay(
+  pattern: PatternWithMetadata,
+  index: number,
+): HTMLElement {
+  const overlay = document.createElement('div');
+  overlay.className = 'live-guard-highlight';
+  overlay.dataset.patternIndex = String(index);
+  overlay.dataset.patternType = pattern.type;
+  overlay.dataset.severity = pattern.severity;
+
+  // Set styles based on severity
+  const colors = getSeverityColor(pattern.severity);
+
+  overlay.style.cssText = `
+    background-color: ${colors.bg};
+    border-color: ${colors.border};
+    box-shadow: 0 0 10px ${colors.bg};
+  `;
+
+  // If bbox is provided, use high-precision coordinate mapping
+  if (pattern.bbox && currentScreenshotSize) {
+    const bbox: BBox = {
+      x: pattern.bbox[0],
+      y: pattern.bbox[1],
+      width: pattern.bbox[2],
+      height: pattern.bbox[3],
+    };
+
+    // Validate bbox
+    if (!isValidBbox(bbox)) {
+      debug('Invalid bbox, skipping highlight:', bbox);
+      // Default full-page overlay if invalid bbox
+      overlay.style.left = '0';
+      overlay.style.top = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+    } else {
+      // Get current viewport and scroll position
+      const viewportSize = getViewportSize();
+      const scrollPosition = getScrollPosition();
+      const dpr = getDevicePixelRatio();
+
+      // Map bbox to DOM coordinates with high precision
+      const result = getCanvasToDomCoords(
+        bbox,
+        currentScreenshotSize,
+        viewportSize,
+        scrollPosition,
+        dpr,
+        pattern.isNormalized !== false, // Default to true if not specified
+      );
+
+      // If we found an element, use its bounding rect for perfect snap-to-element highlight
+      if (result.element && result.elementRect) {
+        const elementRect = result.elementRect;
+        overlay.style.left = `${elementRect.left + scrollPosition.scrollX}px`;
+        overlay.style.top = `${elementRect.top + scrollPosition.scrollY}px`;
+        overlay.style.width = `${elementRect.width}px`;
+        overlay.style.height = `${elementRect.height}px`;
+
+        debug('Snapped highlight to element:', {
+          element: result.element.tagName,
+          rect: elementRect,
+        });
+      } else {
+        // Use mapped coordinates if no element found
+        overlay.style.left = `${result.domX}px`;
+        overlay.style.top = `${result.domY}px`;
+        overlay.style.width = `${result.domWidth}px`;
+        overlay.style.height = `${result.domHeight}px`;
+
+        debug('Using mapped coordinates (no element found):', {
+          domX: result.domX,
+          domY: result.domY,
+          domWidth: result.domWidth,
+          domHeight: result.domHeight,
+        });
+      }
+    }
+  } else {
+    // Default full-page overlay if no bbox or screenshot size
+    overlay.style.left = '0';
+    overlay.style.top = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+  }
+
+  // Add tooltip on hover
+  overlay.addEventListener('mouseenter', () => {
+    showTooltip(pattern, overlay);
+  });
+
+  overlay.addEventListener('mouseleave', () => {
+    hideTooltip();
+  });
+
+  return overlay;
+}
+
+/**
+ * Show tooltip with pattern details
+ */
+function showTooltip(pattern: DetectedPattern, element: HTMLElement): void {
+  if (!shadowRoot) {
+    return;
+  }
+
+  // Remove existing tooltip
+  const existingTooltip = shadowRoot.querySelector('.live-guard-tooltip');
+  if (existingTooltip) {
+    existingTooltip.remove();
+  }
+
   const tooltip = document.createElement('div');
   tooltip.className = 'live-guard-tooltip';
-  tooltip.style.cssText = `
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 8px;
-    min-width: 280px;
-    max-width: 400px;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #fff7e6 0%, #ffc53d 100%);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    color: #262626;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 2147483648;
-    pointer-events: none;
+  tooltip.innerHTML = `
+    <div class="live-guard-tooltip-header">
+      <strong>${pattern.type}</strong>
+      <span class="live-guard-severity-badge ${pattern.severity}">${pattern.severity}</span>
+    </div>
+    <div class="live-guard-tooltip-body">
+      <p>${pattern.description}</p>
+      <div class="live-guard-counter-measure">
+        <strong>Counter-Measure:</strong>
+        <p>${pattern.counterMeasure}</p>
+      </div>
+    </div>
   `;
 
-  // Pattern type
-  const typeElement = document.createElement('div');
-  typeElement.style.cssText = `
-    font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 4px;
-    color: #d46b08;
-  `;
-  typeElement.textContent = `⚠️ ${pattern.type}`;
-  tooltip.appendChild(typeElement);
+  // Position tooltip near the element
+  const rect = element.getBoundingClientRect();
+  tooltip.style.left = `${rect.left}px`;
+  tooltip.style.top = `${rect.bottom + 10}px`;
 
-  // Description
-  const descElement = document.createElement('div');
-  descElement.style.cssText = `
-    margin-bottom: 8px;
-    color: #595959;
-  `;
-  descElement.textContent = pattern.description;
-  tooltip.appendChild(descElement);
+  shadowRoot.appendChild(tooltip);
+}
 
-  // Counter-measure
-  const counterElement = document.createElement('div');
-  counterElement.style.cssText = `
-    padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    font-weight: 600;
-    color: #262626;
-    white-space: pre-wrap;
-  `;
-  counterElement.textContent = pattern.counterMeasure;
-  tooltip.appendChild(counterElement);
-
-  return tooltip;
+/**
+ * Hide tooltip
+ */
+function hideTooltip(): void {
+  if (!shadowRoot) {
+    return;
+  }
+  const tooltip = shadowRoot.querySelector('.live-guard-tooltip');
+  if (tooltip) {
+    tooltip.remove();
+  }
 }
 
 /**
  * Show highlights for detected patterns
+ * @param patterns - Array of detected patterns
+ * @param screenshotSize - Screenshot dimensions for coordinate mapping
+ * @param isNormalized - Whether bbox coordinates are normalized (0-1000)
  */
-function showHighlights(patterns: DetectedPattern[]): void {
-  // Clear existing overlays
+function showHighlights(
+  patterns: DetectedPattern[],
+  screenshotSize?: ScreenshotSize,
+  isNormalized: boolean = true,
+): void {
   clearHighlights();
 
-  // Create new overlays
-  patterns.forEach((pattern, index) => {
-    const overlay = createPatternOverlay(pattern, index);
-    activeOverlays.set(overlay.id, overlay);
-  });
-
-  console.log(`[Live Guard] Created ${patterns.length} pattern overlays`);
-}
-
-/**
- * Clear all highlights
- */
-function clearHighlights(): void {
-  activeOverlays.forEach((overlay) => {
-    overlay.element.remove();
-  });
-  activeOverlays.clear();
-
-  if (overlayContainer) {
-    overlayContainer.remove();
-    overlayContainer = null;
+  // Store screenshot size for coordinate mapping
+  if (screenshotSize) {
+    currentScreenshotSize = screenshotSize;
   }
 
-  console.log('[Live Guard] Cleared all highlights');
+  // Initialize Shadow DOM if not already done
+  initShadowDOM();
+
+  if (!shadowRoot) {
+    debug('Shadow root not available');
+    return;
+  }
+
+  patterns.forEach((pattern, index) => {
+    const patternWithMetadata: PatternWithMetadata = {
+      ...pattern,
+      screenshotSize: currentScreenshotSize || undefined,
+      isNormalized,
+    };
+    const highlight = createHighlightOverlay(patternWithMetadata, index);
+    shadowRoot!.appendChild(highlight);
+    currentHighlights.push(highlight);
+  });
+
+  debug(`Added ${patterns.length} highlights`);
 }
 
 /**
- * Update overlay positions on scroll (scroll-aware)
+ * Focus on a specific pattern highlight
+ * Changes highlight color and scrolls element into view
+ * @param patternIndex - Index of the pattern to focus
  */
-function updateOverlayPositions(): void {
-  activeOverlays.forEach((overlay) => {
-    const pattern = overlay.pattern;
-    if (pattern.bbox && pattern.bbox.length === 4) {
-      const [x, y, width, height] = pattern.bbox;
-      overlay.element.style.left = `${x}px`;
-      overlay.element.style.top = `${y}px`;
+function focusPattern(patternIndex: number): void {
+  if (!currentHighlights[patternIndex]) {
+    debug('Pattern highlight not found:', patternIndex);
+    return;
+  }
+
+  const highlight = currentHighlights[patternIndex];
+
+  // Change highlight color to bright yellow for focus
+  highlight.style.backgroundColor = 'rgba(255, 235, 59, 0.5)';
+  highlight.style.borderColor = '#ffeb3b';
+  highlight.style.boxShadow = '0 0 20px rgba(255, 235, 59, 0.8)';
+
+  // Get the element associated with this highlight
+  const patternType = highlight.dataset.patternType;
+  const severity = highlight.dataset.severity;
+
+  debug('Focusing on pattern:', { patternIndex, patternType, severity });
+
+  // Scroll the highlight into view
+  highlight.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+    inline: 'center',
+  });
+
+  // Reset other highlights to their original colors
+  currentHighlights.forEach((h, idx) => {
+    if (idx !== patternIndex) {
+      const hSeverity = h.dataset.severity || 'low';
+      const colors = getSeverityColor(hSeverity);
+      h.style.backgroundColor = colors.bg;
+      h.style.borderColor = colors.border;
+      h.style.boxShadow = `0 0 10px ${colors.bg}`;
     }
   });
 }
 
 /**
- * Listen for messages from extension
+ * Reset all highlights to their original colors
  */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === LIVE_GUARD_MESSAGES.SHOW_HIGHLIGHTS) {
-    const { patterns } = request;
-    showHighlights(patterns);
-    sendResponse({ success: true });
-  } else if (request.action === LIVE_GUARD_MESSAGES.CLEAR_HIGHLIGHTS) {
-    clearHighlights();
-    sendResponse({ success: true });
+function resetHighlightColors(): void {
+  currentHighlights.forEach((highlight) => {
+    const severity = highlight.dataset.severity || 'low';
+    const colors = getSeverityColor(severity);
+    highlight.style.backgroundColor = colors.bg;
+    highlight.style.borderColor = colors.border;
+    highlight.style.boxShadow = `0 0 10px ${colors.bg}`;
+  });
+}
+
+/**
+ * Listen for messages from sidebar
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  debug('Received message:', message);
+
+  switch (message.action) {
+    case LIVE_GUARD_MESSAGES.CLEAR_HIGHLIGHTS:
+      clearHighlights();
+      sendResponse({ success: true });
+      break;
+
+    case LIVE_GUARD_MESSAGES.SHOW_HIGHLIGHTS:
+      showHighlights(
+        message.patterns,
+        message.screenshotSize,
+        message.isNormalized,
+      );
+      sendResponse({ success: true });
+      break;
+
+    case LIVE_GUARD_MESSAGES.FOCUS_PATTERN:
+      focusPattern(message.patternIndex);
+      sendResponse({ success: true });
+      break;
+
+    default:
+      debug('Unknown message action:', message.action);
   }
 
-  return true;
+  return true; // Keep message channel open for async response
 });
 
 /**
- * Listen for scroll events to update overlay positions
+ * Initialize content script
  */
-let scrollTimeout: number | null = null;
-window.addEventListener('scroll', () => {
-  if (scrollTimeout) {
-    window.clearTimeout(scrollTimeout);
-  }
-  scrollTimeout = window.setTimeout(() => {
-    updateOverlayPositions();
-  }, 100);
-});
+function init(): void {
+  debug('Live Guard content script initialized');
 
-/**
- * Listen for resize events to update overlay positions
- */
-window.addEventListener('resize', () => {
-  if (scrollTimeout) {
-    window.clearTimeout(scrollTimeout);
-  }
-  scrollTimeout = window.setTimeout(() => {
-    updateOverlayPositions();
-  }, 100);
-});
+  // Initialize Shadow DOM
+  initShadowDOM();
+}
 
-/**
- * Clean up on page unload
- */
-window.addEventListener('beforeunload', () => {
-  clearHighlights();
-});
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
-console.log('[Live Guard] Guard highlighter content script loaded');
+// Export for testing
+export { clearHighlights, showHighlights, createHighlightOverlay };

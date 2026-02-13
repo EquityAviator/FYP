@@ -26,6 +26,7 @@ const LIVE_GUARD_MESSAGES = {
   SCAN_PAGE: 'live-guard-scan-page',
   CLEAR_HIGHLIGHTS: 'live-guard-clear-highlights',
   SHOW_HIGHLIGHTS: 'live-guard-show-highlights',
+  FOCUS_PATTERN: 'live-guard-focus-pattern',
 } as const;
 
 chrome.sidePanel
@@ -61,6 +62,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Handle Live Guard clear highlights request
   if (request.action === LIVE_GUARD_MESSAGES.CLEAR_HIGHLIGHTS) {
     console.log('[ServiceWorker] Live Guard clear highlights request received');
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // Handle Live Guard focus pattern request
+  if (request.action === LIVE_GUARD_MESSAGES.FOCUS_PATTERN) {
+    console.log('[ServiceWorker] Live Guard focus pattern request received');
     sendResponse({ success: true });
     return true;
   }
