@@ -223,7 +223,10 @@ export const extractDefaultValue = (field: ZodType): unknown => {
 };
 
 import type { GroupedActionDump, WebUIContext } from '@darkpatternhunter/core';
-import type { ExecutionOptions, PlaygroundAgent } from '@darkpatternhunter/playground';
+import type {
+  ExecutionOptions,
+  PlaygroundAgent,
+} from '@darkpatternhunter/playground';
 
 // result type
 export interface PlaygroundResult {

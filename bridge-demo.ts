@@ -32,7 +32,9 @@ async function main() {
   const agent = new AgentOverChromeBridge();
 
   try {
-    console.log('🧠 Connecting to a new Chrome tab at https://www.daraz.pk/ ...');
+    console.log(
+      '🧠 Connecting to a new Chrome tab at https://www.daraz.pk/ ...',
+    );
     await agent.connectNewTabWithUrl('https://www.daraz.pk/');
 
     console.log('🤖 Asking the model to analyze the page for dark patterns...');
@@ -62,5 +64,3 @@ main().catch((error) => {
   console.error('❌ Bridge demo failed:', error);
   process.exit(1);
 });
-
-

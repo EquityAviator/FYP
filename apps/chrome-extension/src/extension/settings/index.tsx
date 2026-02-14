@@ -6,30 +6,30 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import {
+  discoverLMStudioModels,
+  isLMStudioServerRunning,
+} from '@darkpatternhunter/core/ai-model';
+import {
   Button,
   Card,
   Divider,
   Input,
-  message,
   Radio,
   Select,
   Space,
   Tag,
   Typography,
+  message,
 } from 'antd';
 import { useEffect, useState } from 'react';
 import {
-  discoverLMStudioModels,
-  isLMStudioServerRunning,
-} from '@darkpatternhunter/core/ai-model';
-import {
+  type AIConfig,
+  type AIProvider,
   AI_DEFAULTS,
   AI_STORAGE_KEYS,
   getAIConfig,
   isLocalServerReachable,
   saveAIConfig,
-  type AIConfig,
-  type AIProvider,
 } from '../../utils/aiConfig';
 
 const { Title, Text, Paragraph } = Typography;
@@ -257,8 +257,8 @@ export function Settings() {
           </div>
           <div style={{ fontSize: '12px', color: '#666' }}>
             <p>
-              The API key is stored locally in your browser and used to communicate
-              directly with OpenAI API for dark pattern analysis.
+              The API key is stored locally in your browser and used to
+              communicate directly with OpenAI API for dark pattern analysis.
             </p>
           </div>
         </Card>
@@ -368,7 +368,9 @@ export function Settings() {
                 <ol style={{ paddingLeft: '20px', margin: '8px 0' }}>
                   <li>Start LM Studio on your computer</li>
                   <li>Load a model in LM Studio</li>
-                  <li>Enable the server in LM Studio (default: localhost:1234)</li>
+                  <li>
+                    Enable the server in LM Studio (default: localhost:1234)
+                  </li>
                   <li>Click "Refresh Models" to discover available models</li>
                   <li>Select a model from the dropdown</li>
                 </ol>

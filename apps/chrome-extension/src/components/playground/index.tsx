@@ -46,7 +46,11 @@ export function BrowserExtensionPlayground({
     try {
       const targets = await chrome.debugger.getTargets();
       for (const target of targets) {
-        if (target.attached && target.tabId && typeof target.tabId === 'number') {
+        if (
+          target.attached &&
+          target.tabId &&
+          typeof target.tabId === 'number'
+        ) {
           try {
             await chrome.debugger.detach({ tabId: target.tabId });
           } catch (e) {
@@ -55,7 +59,10 @@ export function BrowserExtensionPlayground({
               // Suppress "No tab id to detach" errors
               const errorMessage = chrome.runtime.lastError.message || '';
               if (!errorMessage.includes('No tab id')) {
-                console.warn('Debugger detach error:', chrome.runtime.lastError.message);
+                console.warn(
+                  'Debugger detach error:',
+                  chrome.runtime.lastError.message,
+                );
               }
             }
           }

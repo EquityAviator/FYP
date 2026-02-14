@@ -69,8 +69,7 @@ export async function discoverLMStudioModels(
       models: data.data,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     debug(`Failed to discover models: ${errorMessage}`);
     return {
       success: false,

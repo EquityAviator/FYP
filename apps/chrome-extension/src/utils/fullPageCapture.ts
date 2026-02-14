@@ -81,9 +81,7 @@ async function captureSegment(
  * @param tabId - Tab ID to get dimensions from
  * @returns Page dimensions
  */
-async function getPageDimensions(
-  tabId: number,
-): Promise<{
+async function getPageDimensions(tabId: number): Promise<{
   totalHeight: number;
   viewportHeight: number;
   viewportWidth: number;
@@ -286,17 +284,13 @@ export async function captureFullPage(
 
       // Clone the document and filter invisible nodes
       const clone = document.documentElement.cloneNode(true) as HTMLElement;
-      const walker = document.createTreeWalker(
-        clone,
-        NodeFilter.SHOW_ELEMENT,
-        {
-          acceptNode: (node) => {
-            return filterInvisibleNodes(node)
-              ? NodeFilter.FILTER_ACCEPT
-              : NodeFilter.FILTER_REJECT;
-          },
+      const walker = document.createTreeWalker(clone, NodeFilter.SHOW_ELEMENT, {
+        acceptNode: (node) => {
+          return filterInvisibleNodes(node)
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
         },
-      );
+      });
 
       // Remove rejected nodes
       while (walker.nextNode()) {

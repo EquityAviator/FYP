@@ -158,11 +158,10 @@ export class DarkPatternDetectionError extends DarkPatternHunterError {
     public readonly pageUrl?: string,
     details?: Record<string, unknown>,
   ) {
-    super(
-      message,
-      DPHErrorCode.DARK_PATTERN_DETECTION_FAILED,
-      { pageUrl, ...details },
-    );
+    super(message, DPHErrorCode.DARK_PATTERN_DETECTION_FAILED, {
+      pageUrl,
+      ...details,
+    });
     this.name = 'DarkPatternDetectionError';
   }
 }

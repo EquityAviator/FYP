@@ -155,7 +155,11 @@ export async function getActiveModelConfig(): Promise<{
 }> {
   const config = await getAIConfig();
 
-  if (config.provider === 'local' && config.localAiEnabled && config.selectedModel) {
+  if (
+    config.provider === 'local' &&
+    config.localAiEnabled &&
+    config.selectedModel
+  ) {
     // Use local LM Studio server
     return {
       modelName: config.selectedModel,
@@ -212,10 +216,7 @@ export async function migrateLegacySettings(): Promise<void> {
   const config = await getAIConfig();
 
   // If we have legacy settings but no provider, set provider based on legacy settings
-  if (
-    !config.provider &&
-    (config.localAiEnabled || config.openaiApiKey)
-  ) {
+  if (!config.provider && (config.localAiEnabled || config.openaiApiKey)) {
     const newProvider: AIProvider = config.localAiEnabled ? 'local' : 'openai';
     await saveAIConfig({ provider: newProvider });
     debug('Migrated legacy settings to provider:', newProvider);

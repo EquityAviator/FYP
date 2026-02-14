@@ -6,8 +6,16 @@
 */
 
 import { limitOpenNewTabScript } from '@/web-element';
-import type { ElementTreeNode, Point, Size, UIContext } from '@darkpatternhunter/core';
-import type { AbstractInterface, DeviceAction } from '@darkpatternhunter/core/device';
+import type {
+  ElementTreeNode,
+  Point,
+  Size,
+  UIContext,
+} from '@darkpatternhunter/core';
+import type {
+  AbstractInterface,
+  DeviceAction,
+} from '@darkpatternhunter/core/device';
 import type { ElementInfo } from '@darkpatternhunter/shared/extractor';
 import { treeToList } from '@darkpatternhunter/shared/extractor';
 import { createImgBase64ByFormat } from '@darkpatternhunter/shared/img';

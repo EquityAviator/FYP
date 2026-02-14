@@ -1,5 +1,8 @@
 import { overrideAIConfig } from '@darkpatternhunter/shared/env';
-import type { GLOBAL_ENV_KEYS, MODEL_ENV_KEYS } from '@darkpatternhunter/shared/env';
+import type {
+  GLOBAL_ENV_KEYS,
+  MODEL_ENV_KEYS,
+} from '@darkpatternhunter/shared/env';
 import { message } from 'antd';
 
 /**

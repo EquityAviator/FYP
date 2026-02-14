@@ -4,15 +4,15 @@
  * Reads directly from chrome.storage.local and provides reactive updates
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  getAIConfig,
-  saveAIConfig,
-  isLocalServerReachable,
   type AIConfig,
   type AIProvider,
+  getAIConfig,
+  isLocalServerReachable,
+  saveAIConfig,
 } from '../utils/aiConfig';
-import { getDebug } from '@darkpatternhunter/shared/logger';
 
 const debug = getDebug('use-global-ai-config');
 
@@ -112,15 +112,18 @@ export function useGlobalAIConfig() {
   /**
    * Update configuration
    */
-  const updateConfig = useCallback(async (updates: Partial<AIConfig>) => {
-    try {
-      await saveAIConfig(updates);
-      // Reload config after update
-      await loadConfig();
-    } catch (error) {
-      console.error('Failed to update AI config:', error);
-    }
-  }, [loadConfig]);
+  const updateConfig = useCallback(
+    async (updates: Partial<AIConfig>) => {
+      try {
+        await saveAIConfig(updates);
+        // Reload config after update
+        await loadConfig();
+      } catch (error) {
+        console.error('Failed to update AI config:', error);
+      }
+    },
+    [loadConfig],
+  );
 
   /**
    * Refresh configuration (reload from storage)

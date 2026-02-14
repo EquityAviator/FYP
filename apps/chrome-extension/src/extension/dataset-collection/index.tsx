@@ -1,60 +1,68 @@
 import {
+  CheckCircleOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EditOutlined,
+  EyeOutlined,
   FileTextOutlined,
   PlayCircleOutlined,
   WarningOutlined,
-  CheckCircleOutlined,
-  EyeOutlined,
-  EditOutlined,
 } from '@ant-design/icons';
+import {
+  AIActionType,
+  type AIArgs,
+  callAIWithObjectResponse,
+} from '@darkpatternhunter/core/ai-model';
+import type { IModelConfig } from '@darkpatternhunter/shared/env';
+import { getDebug } from '@darkpatternhunter/shared/logger';
 import {
   Alert,
   Button,
   Card,
+  Col,
   Empty,
+  Image,
   List,
-  message,
   Modal,
   Progress,
   Row,
-  Col,
+  Select,
   Space,
+  Spin,
   Statistic,
   Tag,
   Typography,
-  Spin,
-  Select,
-  Image,
+  message,
 } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useGlobalAIConfig } from '../../hooks/useGlobalAIConfig';
+import { getAIConfig, getActiveModelConfig } from '../../utils/aiConfig';
+import { drawBboxesOnImage } from '../../utils/bboxOverlay';
 import {
-  AIActionType,
-  callAIWithObjectResponse,
-  type AIArgs,
-} from '@darkpatternhunter/core/ai-model';
-import { getDebug } from '@darkpatternhunter/shared/logger';
-import type { IModelConfig } from '@darkpatternhunter/shared/env';
+  exportAnnotatedImages,
+  exportAsCOCO,
+  exportAsYOLO,
+} from '../../utils/cocoYoloExport';
 import {
+  type DarkPattern,
+  type DatasetEntry,
   clearDatasetEntries,
   deleteDatasetEntry,
   exportDatasetAsBundleZip,
   exportDatasetAsJSON,
-  exportTextDatasetAsJSONL,
   exportForUITarsFineTuning,
+  exportTextDatasetAsJSONL,
   getDatasetEntries,
   storeDatasetEntry,
-  type DatasetEntry,
-  type DarkPattern,
 } from '../../utils/datasetDB';
 import { cropImageFromBbox } from '../../utils/imageCrop';
-import { isPakistaniEcommerceSite, getSiteName, validateUrl } from '../../utils/pakistaniSites';
-import { exportAsCOCO, exportAsYOLO, exportAnnotatedImages } from '../../utils/cocoYoloExport';
-import { drawBboxesOnImage } from '../../utils/bboxOverlay';
+import {
+  getSiteName,
+  isPakistaniEcommerceSite,
+  validateUrl,
+} from '../../utils/pakistaniSites';
 import BboxEditor from './BboxEditor';
-import { getActiveModelConfig, getAIConfig } from '../../utils/aiConfig';
-import { useGlobalAIConfig } from '../../hooks/useGlobalAIConfig';
 import './index.less';
 
 const { Text, Paragraph } = Typography;
@@ -175,19 +183,26 @@ export default function DatasetCollection() {
 
   const calculateStatistics = () => {
     const totalEntries = entries.length;
-    const totalPatterns = entries.reduce((sum, e) => sum + e.patterns.length, 0);
-    const sitesWithPatterns = entries.filter(e => e.patterns.length > 0).length;
-    const prevalenceRate = totalEntries > 0 ? (sitesWithPatterns / totalEntries) * 100 : 0;
+    const totalPatterns = entries.reduce(
+      (sum, e) => sum + e.patterns.length,
+      0,
+    );
+    const sitesWithPatterns = entries.filter(
+      (e) => e.patterns.length > 0,
+    ).length;
+    const prevalenceRate =
+      totalEntries > 0 ? (sitesWithPatterns / totalEntries) * 100 : 0;
 
     const categoryBreakdown: Record<string, number> = {};
-    entries.forEach(entry => {
-      entry.patterns.forEach(pattern => {
-        categoryBreakdown[pattern.type] = (categoryBreakdown[pattern.type] || 0) + 1;
+    entries.forEach((entry) => {
+      entry.patterns.forEach((pattern) => {
+        categoryBreakdown[pattern.type] =
+          (categoryBreakdown[pattern.type] || 0) + 1;
       });
     });
 
     const pakistaniSitesScanned = entries.filter(
-      e => e.metadata?.researchContext?.isPakistaniEcommerce
+      (e) => e.metadata?.researchContext?.isPakistaniEcommerce,
     ).length;
 
     setStatistics({
@@ -215,15 +230,18 @@ export default function DatasetCollection() {
     filterPattern === 'ALL'
       ? entries
       : entries.filter((entry) =>
-        entry.patterns.some((p) => p.type === filterPattern),
-      );
+          entry.patterns.some((p) => p.type === filterPattern),
+        );
 
   const getCurrentTab = async () => {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     return tabs[0];
   };
 
-  const waitForPageLoad = async (tabId: number, maxWait = 10000): Promise<void> => {
+  const waitForPageLoad = async (
+    tabId: number,
+    maxWait = 10000,
+  ): Promise<void> => {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
 
@@ -236,7 +254,7 @@ export default function DatasetCollection() {
 
           if (results[0]?.result === 'complete') {
             // Wait a bit more for dynamic content
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise((r) => setTimeout(r, 2000));
             resolve();
             return;
           }
@@ -260,7 +278,11 @@ export default function DatasetCollection() {
     // Get tab first to get windowId
     const tab = await chrome.tabs.get(tabId);
 
-    if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+    if (
+      !tab.url ||
+      tab.url.startsWith('chrome://') ||
+      tab.url.startsWith('chrome-extension://')
+    ) {
       throw new Error('Cannot capture Chrome internal pages');
     }
 
@@ -304,7 +326,10 @@ export default function DatasetCollection() {
       }),
     });
 
-    const viewport = viewportResults[0]?.result || { width: 1920, height: 1080 };
+    const viewport = viewportResults[0]?.result || {
+      width: 1920,
+      height: 1080,
+    };
 
     // Get page metadata
     const metadata = {
@@ -347,7 +372,8 @@ export default function DatasetCollection() {
     const prompt: AIArgs = [
       {
         role: 'system',
-        content: 'You are a dark pattern detection expert specializing in Pakistani e-commerce. Analyze webpages for deceptive UI patterns in both English, Urdu (Perso-Arabic script), and Roman Urdu (Latin script). Return ONLY valid JSON.',
+        content:
+          'You are a dark pattern detection expert specializing in Pakistani e-commerce. Analyze webpages for deceptive UI patterns in both English, Urdu (Perso-Arabic script), and Roman Urdu (Latin script). Return ONLY valid JSON.',
       },
       {
         role: 'user',
@@ -377,7 +403,7 @@ export default function DatasetCollection() {
         const summary = response.content.summary;
 
         // Validate and filter patterns
-        const validPatterns = patterns.filter(p => {
+        const validPatterns = patterns.filter((p) => {
           // Filter by confidence threshold
           if (p.confidence !== undefined && p.confidence <= 0.7) {
             return false;
@@ -391,21 +417,34 @@ export default function DatasetCollection() {
             if (!Array.isArray(p.bbox) || p.bbox.length !== 4) {
               // Invalid bbox format -> Keep pattern but strip bbox? Or reject?
               // Let's strip the invalid bbox and keep the pattern as text-only
-              console.warn(`Pattern "${p.type}" has invalid bbox format, removing bbox`, p.bbox);
-              delete p.bbox;
+              console.warn(
+                `Pattern "${p.type}" has invalid bbox format, removing bbox`,
+                p.bbox,
+              );
+              p.bbox = undefined;
               return true;
             }
 
             const [x, y, width, height] = p.bbox;
             if (
-              typeof x !== 'number' || typeof y !== 'number' ||
-              typeof width !== 'number' || typeof height !== 'number' ||
-              x < 0 || y < 0 || width <= 0 || height <= 0 ||
-              !Number.isFinite(x) || !Number.isFinite(y) ||
-              !Number.isFinite(width) || !Number.isFinite(height)
+              typeof x !== 'number' ||
+              typeof y !== 'number' ||
+              typeof width !== 'number' ||
+              typeof height !== 'number' ||
+              x < 0 ||
+              y < 0 ||
+              width <= 0 ||
+              height <= 0 ||
+              !Number.isFinite(x) ||
+              !Number.isFinite(y) ||
+              !Number.isFinite(width) ||
+              !Number.isFinite(height)
             ) {
-              console.warn(`Pattern "${p.type}" has invalid bbox values, removing bbox`, p.bbox);
-              delete p.bbox;
+              console.warn(
+                `Pattern "${p.type}" has invalid bbox values, removing bbox`,
+                p.bbox,
+              );
+              p.bbox = undefined;
               return true;
             }
 
@@ -414,7 +453,7 @@ export default function DatasetCollection() {
               Math.round(x),
               Math.round(y),
               Math.round(width),
-              Math.round(height)
+              Math.round(height),
             ];
           }
 
@@ -424,7 +463,9 @@ export default function DatasetCollection() {
         // Warn if patterns were filtered out
         if (patterns.length > validPatterns.length) {
           const filteredCount = patterns.length - validPatterns.length;
-          console.warn(`Filtered out ${filteredCount} pattern(s) due to low confidence`);
+          console.warn(
+            `Filtered out ${filteredCount} pattern(s) due to low confidence`,
+          );
         }
 
         // CRITICAL: Crop individual images for each pattern
@@ -433,18 +474,24 @@ export default function DatasetCollection() {
           validPatterns.map(async (pattern) => {
             if (pattern.bbox && pattern.bbox.length === 4) {
               try {
-                const croppedImage = await cropImageFromBbox(screenshot, pattern.bbox);
+                const croppedImage = await cropImageFromBbox(
+                  screenshot,
+                  pattern.bbox,
+                );
                 return {
                   ...pattern,
                   croppedImage, // Individual cropped image for THIS pattern only
                 };
               } catch (error) {
-                console.error(`Failed to crop image for pattern "${pattern.type}":`, error);
+                console.error(
+                  `Failed to crop image for pattern "${pattern.type}":`,
+                  error,
+                );
                 return pattern; // Return pattern without cropped image if cropping fails
               }
             }
             return pattern;
-          })
+          }),
         );
 
         return {
@@ -457,14 +504,14 @@ export default function DatasetCollection() {
 
         if (attempt < retries) {
           // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
       }
     }
 
     // All retries failed
     throw new Error(
-      `Failed to analyze page after ${retries} attempts: ${lastError?.message || 'Unknown error'}`
+      `Failed to analyze page after ${retries} attempts: ${lastError?.message || 'Unknown error'}`,
     );
   };
 
@@ -473,7 +520,7 @@ export default function DatasetCollection() {
     if (!readyState.isReady) {
       Modal.warning({
         title: 'Model Configuration Required',
-        content: readyState.errorMessage + ' Please configure your AI model settings first.',
+        content: `${readyState.errorMessage} Please configure your AI model settings first.`,
       });
       return;
     }
@@ -487,7 +534,10 @@ export default function DatasetCollection() {
         return;
       }
 
-      if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+      if (
+        tab.url.startsWith('chrome://') ||
+        tab.url.startsWith('chrome-extension://')
+      ) {
         message.error('Cannot analyze Chrome internal pages');
         setAnalyzing(false);
         return;
@@ -500,13 +550,16 @@ export default function DatasetCollection() {
       if (!isPakistaniSite) {
         Modal.confirm({
           title: 'Not a Pakistani E-commerce Site',
-          content: 'This page does not appear to be a Pakistani e-commerce site. Continue analysis anyway?',
+          content:
+            'This page does not appear to be a Pakistani e-commerce site. Continue analysis anyway?',
           onOk: async () => {
             try {
               await performAnalysis(tab, isPakistaniSite, siteName);
             } catch (error: any) {
               console.error('Error in performAnalysis:', error);
-              message.error(`Failed to analyze page: ${error.message || 'Unknown error'}`);
+              message.error(
+                `Failed to analyze page: ${error.message || 'Unknown error'}`,
+              );
             } finally {
               setAnalyzing(false);
             }
@@ -525,7 +578,9 @@ export default function DatasetCollection() {
       }
     } catch (error: any) {
       console.error('Error analyzing page:', error);
-      message.error(`Failed to analyze page: ${error.message || 'Unknown error'}`);
+      message.error(
+        `Failed to analyze page: ${error.message || 'Unknown error'}`,
+      );
       setAnalyzing(false);
     }
   };
@@ -536,11 +591,19 @@ export default function DatasetCollection() {
     siteName: string | null,
   ) => {
     try {
-      message.loading({ content: 'Capturing page data...', key: 'analysis', duration: 0 });
+      message.loading({
+        content: 'Capturing page data...',
+        key: 'analysis',
+        duration: 0,
+      });
 
       const { screenshot, dom, metadata, url } = await capturePageData(tab.id!);
 
-      message.loading({ content: 'Analyzing for dark patterns with AI...', key: 'analysis', duration: 0 });
+      message.loading({
+        content: 'Analyzing for dark patterns with AI...',
+        key: 'analysis',
+        duration: 0,
+      });
 
       const modelConfig = await getActiveModelConfig();
       if (!modelConfig || !modelConfig.modelName) {
@@ -578,7 +641,9 @@ export default function DatasetCollection() {
       message.destroy('analysis');
 
       // Show success message with bbox validation info
-      const patternsWithBbox = patterns.filter(p => p.bbox && p.bbox.length === 4).length;
+      const patternsWithBbox = patterns.filter(
+        (p) => p.bbox && p.bbox.length === 4,
+      ).length;
       if (patterns.length > 0 && patternsWithBbox === patterns.length) {
         message.success({
           content: `Analysis complete! Found ${patterns.length} dark pattern(s) with bounding boxes`,
@@ -591,7 +656,7 @@ export default function DatasetCollection() {
         });
       } else {
         message.success({
-          content: `Analysis complete! No dark patterns detected.`,
+          content: 'Analysis complete! No dark patterns detected.',
           duration: 5,
         });
       }
@@ -609,7 +674,7 @@ export default function DatasetCollection() {
     if (!readyState.isReady) {
       Modal.warning({
         title: 'Model Configuration Required',
-        content: readyState.errorMessage + ' Please configure your AI model settings first.',
+        content: `${readyState.errorMessage} Please configure your AI model settings first.`,
       });
       return;
     }
@@ -643,7 +708,9 @@ export default function DatasetCollection() {
           throw new Error(validation.error || 'Invalid URL');
         }
 
-        setProgress(prev => prev ? { ...prev, status: 'Opening page...' } : null);
+        setProgress((prev) =>
+          prev ? { ...prev, status: 'Opening page...' } : null,
+        );
 
         // Open URL in new tab
         tab = await chrome.tabs.create({ url, active: false });
@@ -652,12 +719,16 @@ export default function DatasetCollection() {
           throw new Error('Failed to create tab');
         }
 
-        setProgress(prev => prev ? { ...prev, status: 'Waiting for page to load...' } : null);
+        setProgress((prev) =>
+          prev ? { ...prev, status: 'Waiting for page to load...' } : null,
+        );
 
         // Wait for page to load properly
         await waitForPageLoad(tab.id, 15000);
 
-        setProgress(prev => prev ? { ...prev, status: 'Capturing page data...' } : null);
+        setProgress((prev) =>
+          prev ? { ...prev, status: 'Capturing page data...' } : null,
+        );
 
         // Capture and analyze
         const { screenshot, dom, metadata } = await capturePageData(tab.id);
@@ -665,7 +736,9 @@ export default function DatasetCollection() {
         const isPakistaniSite = isPakistaniEcommerceSite(url);
         const siteName = getSiteName(url);
 
-        setProgress(prev => prev ? { ...prev, status: 'Analyzing with AI...' } : null);
+        setProgress((prev) =>
+          prev ? { ...prev, status: 'Analyzing with AI...' } : null,
+        );
 
         const { patterns, summary } = await analyzePageForDarkPatterns(
           screenshot,
@@ -711,7 +784,9 @@ export default function DatasetCollection() {
           }
         }
 
-        message.warning(`Failed to process ${url}: ${error.message || 'Unknown error'}`);
+        message.warning(
+          `Failed to process ${url}: ${error.message || 'Unknown error'}`,
+        );
       }
     }
 
@@ -735,17 +810,23 @@ export default function DatasetCollection() {
           <p>Enter URLs to process (one per line):</p>
           <textarea
             id="url-input"
-            style={{ width: '100%', minHeight: '200px', fontFamily: 'monospace' }}
+            style={{
+              width: '100%',
+              minHeight: '200px',
+              fontFamily: 'monospace',
+            }}
             placeholder="https://example.com&#10;https://example2.com"
           />
         </div>
       ),
       onOk: () => {
-        const input = document.getElementById('url-input') as HTMLTextAreaElement;
+        const input = document.getElementById(
+          'url-input',
+        ) as HTMLTextAreaElement;
         const urls = input.value
           .split('\n')
           .map((u) => u.trim())
-          .filter((u) => u && u.startsWith('http'));
+          .filter((u) => u?.startsWith('http'));
 
         if (urls.length === 0) {
           message.error('No valid URLs provided');
@@ -774,12 +855,24 @@ export default function DatasetCollection() {
           <div style={{ marginTop: 16 }}>
             <p>Choose crawling strategy:</p>
             <ul style={{ marginTop: 8, paddingLeft: 20, lineHeight: '1.8' }}>
-              <li><strong>Quick Scan:</strong> Current page only (fast, ~50-200 links)</li>
-              <li><strong>Deep Scan:</strong> Scroll page + wait for dynamic content (~200-1000 links)</li>
-              <li><strong>🕷️ Full Website Crawl:</strong> Recursively follows ALL links to discover EVERY page on the website (comprehensive, may take 10-30 minutes)</li>
+              <li>
+                <strong>Quick Scan:</strong> Current page only (fast, ~50-200
+                links)
+              </li>
+              <li>
+                <strong>Deep Scan:</strong> Scroll page + wait for dynamic
+                content (~200-1000 links)
+              </li>
+              <li>
+                <strong>🕷️ Full Website Crawl:</strong> Recursively follows ALL
+                links to discover EVERY page on the website (comprehensive, may
+                take 10-30 minutes)
+              </li>
             </ul>
             <p style={{ marginTop: 12, color: '#666', fontSize: '12px' }}>
-              <strong>Full Website Crawl:</strong> Will visit every page, follow all internal links, and discover the entire website structure. Perfect for complete coverage.
+              <strong>Full Website Crawl:</strong> Will visit every page, follow
+              all internal links, and discover the entire website structure.
+              Perfect for complete coverage.
             </p>
           </div>
         ),
@@ -795,7 +888,8 @@ export default function DatasetCollection() {
     } catch (error: any) {
       console.error('Auto-discover links error:', error);
       message.error(
-        `Failed to auto-discover links: ${error instanceof Error ? error.message : 'Unknown error'
+        `Failed to auto-discover links: ${
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -838,7 +932,11 @@ export default function DatasetCollection() {
 
   const performDeepLinkDiscovery = async (tabId: number) => {
     try {
-      message.loading({ content: 'Scanning page (this may take 30-60 seconds)...', key: 'crawl', duration: 0 });
+      message.loading({
+        content: 'Scanning page (this may take 30-60 seconds)...',
+        key: 'crawl',
+        duration: 0,
+      });
 
       const results = await chrome.scripting.executeScript({
         target: { tabId },
@@ -890,7 +988,7 @@ export default function DatasetCollection() {
             window.scrollTo(0, document.body.scrollHeight);
 
             // Wait for content to load
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
 
             // Check if page height changed (new content loaded)
             const currentHeight = document.body.scrollHeight;
@@ -910,9 +1008,9 @@ export default function DatasetCollection() {
             // Try clicking "Load More" or "See More" buttons if they exist
             const loadMoreButtons = Array.from(
               document.querySelectorAll<HTMLElement>(
-                'button, a, div[role="button"]'
-              )
-            ).filter(el => {
+                'button, a, div[role="button"]',
+              ),
+            ).filter((el) => {
               const text = el.textContent?.toLowerCase() || '';
               return (
                 text.includes('load more') ||
@@ -926,7 +1024,7 @@ export default function DatasetCollection() {
             if (loadMoreButtons.length > 0) {
               try {
                 loadMoreButtons[0].click();
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise((resolve) => setTimeout(resolve, 3000));
                 collectLinks();
               } catch {
                 // Ignore click errors
@@ -936,7 +1034,7 @@ export default function DatasetCollection() {
 
           // Scroll back to top
           window.scrollTo(0, 0);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           collectLinks();
 
           return Array.from(urls);
@@ -1019,7 +1117,10 @@ export default function DatasetCollection() {
     }
   };
 
-  const performRecursiveWebsiteCrawl = async (startTabId: number, startUrl: string) => {
+  const performRecursiveWebsiteCrawl = async (
+    startTabId: number,
+    startUrl: string,
+  ) => {
     if (isRecursiveCrawling) {
       message.warning('Recursive crawl already in progress');
       return;
@@ -1034,12 +1135,25 @@ export default function DatasetCollection() {
         width: 600,
         content: (
           <div style={{ marginTop: 16 }}>
-            <p>This will recursively crawl the <strong>ENTIRE website</strong> starting from:</p>
-            <p style={{ wordBreak: 'break-all', background: '#f5f5f5', padding: '8px', borderRadius: '4px', fontSize: '12px' }}>
+            <p>
+              This will recursively crawl the <strong>ENTIRE website</strong>{' '}
+              starting from:
+            </p>
+            <p
+              style={{
+                wordBreak: 'break-all',
+                background: '#f5f5f5',
+                padding: '8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+              }}
+            >
               {startUrl}
             </p>
             <div style={{ marginTop: 16 }}>
-              <p><strong>How it works:</strong></p>
+              <p>
+                <strong>How it works:</strong>
+              </p>
               <ul style={{ paddingLeft: 20, fontSize: '12px' }}>
                 <li>Starts from current page</li>
                 <li>Discovers all links on each page</li>
@@ -1049,7 +1163,9 @@ export default function DatasetCollection() {
               </ul>
             </div>
             <p style={{ marginTop: 16, color: '#ff4d4f', fontSize: '12px' }}>
-              <strong>⚠️ Warning:</strong> This may take 10-30 minutes for large websites and will discover thousands of pages. Make sure you have enough API credits.
+              <strong>⚠️ Warning:</strong> This may take 10-30 minutes for large
+              websites and will discover thousands of pages. Make sure you have
+              enough API credits.
             </p>
           </div>
         ),
@@ -1057,7 +1173,12 @@ export default function DatasetCollection() {
         cancelText: 'Cancel',
         onOk: async () => {
           setIsRecursiveCrawling(true);
-          setCrawlProgress({ discovered: 0, visited: 0, queue: 1, currentUrl: startUrl });
+          setCrawlProgress({
+            discovered: 0,
+            visited: 0,
+            queue: 1,
+            currentUrl: startUrl,
+          });
 
           const visitedUrls = new Set<string>();
           const urlQueue: string[] = [normalizeUrl(startUrl)];
@@ -1070,7 +1191,7 @@ export default function DatasetCollection() {
           message.loading({
             content: 'Starting full website crawl... This will take a while.',
             key: 'recursive-crawl',
-            duration: 0
+            duration: 0,
           });
 
           while (currentIndex < urlQueue.length && currentIndex < maxPages) {
@@ -1093,14 +1214,14 @@ export default function DatasetCollection() {
             message.loading({
               content: `Crawling: ${visitedUrls.size} visited, ${allDiscoveredUrls.size} discovered, ${urlQueue.length - currentIndex} in queue\nCurrent: ${currentUrl.substring(0, 60)}...`,
               key: 'recursive-crawl',
-              duration: 0
+              duration: 0,
             });
 
             try {
               // Open URL in new tab
               const tab = await chrome.tabs.create({
                 url: currentUrl,
-                active: false
+                active: false,
               });
 
               if (!tab.id) {
@@ -1122,11 +1243,15 @@ export default function DatasetCollection() {
                   const maxScrollAttempts = 8; // Increased attempts
 
                   // Recursive function to find links, piercing Shadow DOMs
-                  const findLinksInNode = (root: Document | ShadowRoot | Element) => {
+                  const findLinksInNode = (
+                    root: Document | ShadowRoot | Element,
+                  ) => {
                     // Get links in current root
-                    const anchors = Array.from(root.querySelectorAll('a[href]')) as HTMLAnchorElement[];
+                    const anchors = Array.from(
+                      root.querySelectorAll('a[href]'),
+                    ) as HTMLAnchorElement[];
 
-                    anchors.forEach(a => {
+                    anchors.forEach((a) => {
                       try {
                         const rawHref = a.getAttribute('href') || a.href;
                         if (!rawHref) return;
@@ -1137,7 +1262,11 @@ export default function DatasetCollection() {
                         // We mainly check if it's http/https and not some other protocol
                         const urlObj = new URL(absolute);
 
-                        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') return;
+                        if (
+                          urlObj.protocol !== 'http:' &&
+                          urlObj.protocol !== 'https:'
+                        )
+                          return;
 
                         // Basic exclusion of non-page resources
                         const urlLower = absolute.toLowerCase();
@@ -1145,28 +1274,35 @@ export default function DatasetCollection() {
                           urlLower.includes('javascript:') ||
                           urlLower.includes('mailto:') ||
                           urlLower.includes('tel:') ||
-                          urlLower.match(/\.(png|jpg|jpeg|gif|svg|pdf|zip|css|js|woff|woff2)$/i)
+                          urlLower.match(
+                            /\.(png|jpg|jpeg|gif|svg|pdf|zip|css|js|woff|woff2)$/i,
+                          )
                         ) {
                           return;
                         }
 
                         // Check if it belongs to the same domain (allowing subdomains for now, or strict origin?)
                         // User wants "all links that I use for the scratching", implying same site.
-                        // Let's stick to origin startsWith for safety against external links, 
+                        // Let's stick to origin startsWith for safety against external links,
                         // but we can be slightly looser if needed. For now, origin check is standard for "crawling a site".
                         if (absolute.startsWith(origin)) {
                           urlObj.hash = ''; // Remove fragments
-                          if (urlObj.pathname !== '/' && urlObj.pathname.endsWith('/')) {
+                          if (
+                            urlObj.pathname !== '/' &&
+                            urlObj.pathname.endsWith('/')
+                          ) {
                             urlObj.pathname = urlObj.pathname.slice(0, -1);
                           }
                           urls.add(urlObj.href);
                         }
-                      } catch (e) { /* ignore invalid URLs */ }
+                      } catch (e) {
+                        /* ignore invalid URLs */
+                      }
                     });
 
                     // Traverse children to find Shadow Roots
                     const allNodes = root.querySelectorAll('*');
-                    allNodes.forEach(node => {
+                    allNodes.forEach((node) => {
                       if (node.shadowRoot) {
                         findLinksInNode(node.shadowRoot);
                       }
@@ -1183,7 +1319,7 @@ export default function DatasetCollection() {
                   for (let i = 0; i < maxScrollAttempts; i++) {
                     window.scrollTo(0, document.body.scrollHeight);
                     // Wait longer for hydration/network
-                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    await new Promise((resolve) => setTimeout(resolve, 2500));
 
                     const currentHeight = document.body.scrollHeight;
                     if (currentHeight === lastHeight) {
@@ -1191,9 +1327,13 @@ export default function DatasetCollection() {
                       // If stuck for 2 attempts, try scrolling up a bit and back down to trigger scroll events
                       if (scrollAttempts >= 2) {
                         window.scrollTo(0, document.body.scrollHeight - 500);
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 500),
+                        );
                         window.scrollTo(0, document.body.scrollHeight);
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 1000),
+                        );
                         if (document.body.scrollHeight === lastHeight) break; // Still stuck
                       }
                     } else {
@@ -1229,8 +1369,9 @@ export default function DatasetCollection() {
               await chrome.tabs.remove(tab.id);
 
               // Delay between pages to avoid overwhelming the server
-              await new Promise(resolve => setTimeout(resolve, delayBetweenPages));
-
+              await new Promise((resolve) =>
+                setTimeout(resolve, delayBetweenPages),
+              );
             } catch (error: any) {
               console.error(`Error crawling ${currentUrl}:`, error);
               // Mark as visited even if failed to avoid retrying
@@ -1251,26 +1392,65 @@ export default function DatasetCollection() {
             width: 700,
             content: (
               <div style={{ marginTop: 16 }}>
-                <p><strong>Website crawl finished!</strong></p>
+                <p>
+                  <strong>Website crawl finished!</strong>
+                </p>
                 <div style={{ marginTop: 12 }}>
-                  <p><strong>Total pages discovered:</strong> {finalUrls.length}</p>
-                  <p><strong>Pages visited:</strong> {visitedUrls.size}</p>
+                  <p>
+                    <strong>Total pages discovered:</strong> {finalUrls.length}
+                  </p>
+                  <p>
+                    <strong>Pages visited:</strong> {visitedUrls.size}
+                  </p>
                 </div>
-                <div style={{ marginTop: 16, maxHeight: '200px', overflow: 'auto', border: '1px solid #d9d9d9', padding: '8px', borderRadius: '4px' }}>
-                  <p style={{ fontSize: '12px', marginBottom: '8px', fontWeight: 'bold' }}>Sample URLs:</p>
+                <div
+                  style={{
+                    marginTop: 16,
+                    maxHeight: '200px',
+                    overflow: 'auto',
+                    border: '1px solid #d9d9d9',
+                    padding: '8px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      marginBottom: '8px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Sample URLs:
+                  </p>
                   {finalUrls.slice(0, 20).map((url, idx) => (
-                    <p key={idx} style={{ fontSize: '11px', margin: '4px 0', wordBreak: 'break-all' }}>
+                    <p
+                      key={idx}
+                      style={{
+                        fontSize: '11px',
+                        margin: '4px 0',
+                        wordBreak: 'break-all',
+                      }}
+                    >
                       {url}
                     </p>
                   ))}
                   {finalUrls.length > 20 && (
-                    <p style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
+                    <p
+                      style={{
+                        fontSize: '11px',
+                        color: '#666',
+                        marginTop: '8px',
+                      }}
+                    >
                       ... and {finalUrls.length - 20} more
                     </p>
                   )}
                 </div>
                 <p style={{ marginTop: 16, color: '#666', fontSize: '12px' }}>
-                  <small>Ready to process all {finalUrls.length} pages for dark pattern analysis.</small>
+                  <small>
+                    Ready to process all {finalUrls.length} pages for dark
+                    pattern analysis.
+                  </small>
                 </p>
               </div>
             ),
@@ -1297,25 +1477,28 @@ export default function DatasetCollection() {
 
     // Filter and categorize URLs
     const categorized = {
-      product: discovered.filter(url =>
-        url.match(/\/product\//i) ||
-        url.match(/\/p\//i) ||
-        url.match(/\/item\//i) ||
-        url.match(/\/dp\//i)
+      product: discovered.filter(
+        (url) =>
+          url.match(/\/product\//i) ||
+          url.match(/\/p\//i) ||
+          url.match(/\/item\//i) ||
+          url.match(/\/dp\//i),
       ),
-      category: discovered.filter(url =>
-        url.match(/\/category\//i) ||
-        url.match(/\/c\//i) ||
-        url.match(/\/shop\//i)
+      category: discovered.filter(
+        (url) =>
+          url.match(/\/category\//i) ||
+          url.match(/\/c\//i) ||
+          url.match(/\/shop\//i),
       ),
-      other: discovered.filter(url =>
-        !url.match(/\/product\//i) &&
-        !url.match(/\/p\//i) &&
-        !url.match(/\/item\//i) &&
-        !url.match(/\/dp\//i) &&
-        !url.match(/\/category\//i) &&
-        !url.match(/\/c\//i) &&
-        !url.match(/\/shop\//i)
+      other: discovered.filter(
+        (url) =>
+          !url.match(/\/product\//i) &&
+          !url.match(/\/p\//i) &&
+          !url.match(/\/item\//i) &&
+          !url.match(/\/dp\//i) &&
+          !url.match(/\/category\//i) &&
+          !url.match(/\/c\//i) &&
+          !url.match(/\/shop\//i),
       ),
     };
 
@@ -1324,16 +1507,48 @@ export default function DatasetCollection() {
       width: 700,
       content: (
         <div style={{ marginTop: 16 }}>
-          <p><strong>Total links discovered: {discovered.length}</strong></p>
+          <p>
+            <strong>Total links discovered: {discovered.length}</strong>
+          </p>
           <div style={{ marginTop: 12 }}>
-            <p><strong>Product pages:</strong> {categorized.product.length}</p>
-            <p><strong>Category pages:</strong> {categorized.category.length}</p>
-            <p><strong>Other pages:</strong> {categorized.other.length}</p>
+            <p>
+              <strong>Product pages:</strong> {categorized.product.length}
+            </p>
+            <p>
+              <strong>Category pages:</strong> {categorized.category.length}
+            </p>
+            <p>
+              <strong>Other pages:</strong> {categorized.other.length}
+            </p>
           </div>
-          <div style={{ marginTop: 16, maxHeight: '200px', overflow: 'auto', border: '1px solid #d9d9d9', padding: '8px', borderRadius: '4px' }}>
-            <p style={{ fontSize: '12px', marginBottom: '8px', fontWeight: 'bold' }}>Sample URLs:</p>
+          <div
+            style={{
+              marginTop: 16,
+              maxHeight: '200px',
+              overflow: 'auto',
+              border: '1px solid #d9d9d9',
+              padding: '8px',
+              borderRadius: '4px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '12px',
+                marginBottom: '8px',
+                fontWeight: 'bold',
+              }}
+            >
+              Sample URLs:
+            </p>
             {discovered.slice(0, 10).map((url, idx) => (
-              <p key={idx} style={{ fontSize: '11px', margin: '4px 0', wordBreak: 'break-all' }}>
+              <p
+                key={idx}
+                style={{
+                  fontSize: '11px',
+                  margin: '4px 0',
+                  wordBreak: 'break-all',
+                }}
+              >
                 {url}
               </p>
             ))}
@@ -1344,7 +1559,10 @@ export default function DatasetCollection() {
             )}
           </div>
           <p style={{ marginTop: 16, color: '#666', fontSize: '12px' }}>
-            <small>Note: Processing all {discovered.length} pages may take a while. Consider filtering by type first.</small>
+            <small>
+              Note: Processing all {discovered.length} pages may take a while.
+              Consider filtering by type first.
+            </small>
           </p>
         </div>
       ),
@@ -1386,7 +1604,8 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('Export error before download:', error);
       message.error(
-        `Failed to prepare dataset for export: ${error instanceof Error ? error.message : 'Unknown error'
+        `Failed to prepare dataset for export: ${
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1409,7 +1628,8 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('Text dataset export error:', error);
       message.error(
-        `Failed to export text-only dataset: ${error instanceof Error ? error.message : 'Unknown error'
+        `Failed to export text-only dataset: ${
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1447,7 +1667,8 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('Bundle export error:', error);
       message.error(
-        `Failed to build dataset bundle: ${error instanceof Error ? error.message : 'Unknown error'
+        `Failed to build dataset bundle: ${
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     } finally {
@@ -1462,14 +1683,15 @@ export default function DatasetCollection() {
     }
 
     // Check if entries have bounding boxes
-    const entriesWithBbox = entries.filter(e =>
-      e.patterns.some(p => p.bbox && p.bbox.length === 4)
+    const entriesWithBbox = entries.filter((e) =>
+      e.patterns.some((p) => p.bbox && p.bbox.length === 4),
     );
 
     if (entriesWithBbox.length === 0) {
       Modal.warning({
         title: 'No Bounding Boxes Found',
-        content: 'Your dataset entries do not have bounding box annotations. GPT-4o needs to detect and return bbox coordinates for each pattern. Please re-analyze pages to get bounding boxes.',
+        content:
+          'Your dataset entries do not have bounding box annotations. GPT-4o needs to detect and return bbox coordinates for each pattern. Please re-analyze pages to get bounding boxes.',
       });
       return;
     }
@@ -1492,7 +1714,9 @@ export default function DatasetCollection() {
               `Failed to export UI-TARS dataset: ${chrome.runtime.lastError.message}`,
             );
           } else {
-            message.success(`UI-TARS training dataset exported (${entriesWithBbox.length} images with annotations)`);
+            message.success(
+              `UI-TARS training dataset exported (${entriesWithBbox.length} images with annotations)`,
+            );
           }
           setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
         },
@@ -1500,7 +1724,8 @@ export default function DatasetCollection() {
     } catch (error) {
       console.error('UI-TARS export error:', error);
       message.error(
-        `Failed to export UI-TARS dataset: ${error instanceof Error ? error.message : 'Unknown error'
+        `Failed to export UI-TARS dataset: ${
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     } finally {
@@ -1511,7 +1736,8 @@ export default function DatasetCollection() {
   const handleClear = () => {
     Modal.confirm({
       title: 'Clear All Entries',
-      content: 'Are you sure you want to delete all dataset entries? This cannot be undone.',
+      content:
+        'Are you sure you want to delete all dataset entries? This cannot be undone.',
       onOk: async () => {
         try {
           await clearDatasetEntries();
@@ -1541,16 +1767,23 @@ export default function DatasetCollection() {
       const blob = await exportAsCOCO();
       const filename = `dark-patterns-coco-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
       const blobUrl = URL.createObjectURL(blob);
-      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
-        if (chrome.runtime.lastError) {
-          message.error(`Failed to export COCO: ${chrome.runtime.lastError.message}`);
-        } else {
-          message.success('COCO format dataset exported!');
-        }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      });
+      chrome.downloads.download(
+        { url: blobUrl, filename, saveAs: true },
+        () => {
+          if (chrome.runtime.lastError) {
+            message.error(
+              `Failed to export COCO: ${chrome.runtime.lastError.message}`,
+            );
+          } else {
+            message.success('COCO format dataset exported!');
+          }
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        },
+      );
     } catch (error) {
-      message.error(`Failed to export COCO: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(
+        `Failed to export COCO: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setExportingBundle(false);
     }
@@ -1563,16 +1796,23 @@ export default function DatasetCollection() {
       const blob = await exportAsYOLO();
       const filename = `dark-patterns-yolo-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
       const blobUrl = URL.createObjectURL(blob);
-      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
-        if (chrome.runtime.lastError) {
-          message.error(`Failed to export YOLO: ${chrome.runtime.lastError.message}`);
-        } else {
-          message.success('YOLO format dataset exported!');
-        }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      });
+      chrome.downloads.download(
+        { url: blobUrl, filename, saveAs: true },
+        () => {
+          if (chrome.runtime.lastError) {
+            message.error(
+              `Failed to export YOLO: ${chrome.runtime.lastError.message}`,
+            );
+          } else {
+            message.success('YOLO format dataset exported!');
+          }
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        },
+      );
     } catch (error) {
-      message.error(`Failed to export YOLO: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(
+        `Failed to export YOLO: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setExportingBundle(false);
     }
@@ -1585,16 +1825,23 @@ export default function DatasetCollection() {
       const blob = await exportAnnotatedImages();
       const filename = `dark-patterns-annotated-${dayjs().format('YYYY-MM-DD-HHmmss')}.zip`;
       const blobUrl = URL.createObjectURL(blob);
-      chrome.downloads.download({ url: blobUrl, filename, saveAs: true }, () => {
-        if (chrome.runtime.lastError) {
-          message.error(`Failed to export: ${chrome.runtime.lastError.message}`);
-        } else {
-          message.success('Annotated images exported!');
-        }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      });
+      chrome.downloads.download(
+        { url: blobUrl, filename, saveAs: true },
+        () => {
+          if (chrome.runtime.lastError) {
+            message.error(
+              `Failed to export: ${chrome.runtime.lastError.message}`,
+            );
+          } else {
+            message.success('Annotated images exported!');
+          }
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        },
+      );
     } catch (error) {
-      message.error(`Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(
+        `Failed to export: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setExportingBundle(false);
     }
@@ -1620,14 +1867,17 @@ export default function DatasetCollection() {
         patterns.map(async (p) => {
           if (p.bbox && p.bbox.length === 4 && editingEntry.screenshot) {
             try {
-              const croppedImage = await cropImageFromBbox(editingEntry.screenshot, p.bbox);
+              const croppedImage = await cropImageFromBbox(
+                editingEntry.screenshot,
+                p.bbox,
+              );
               return { ...p, croppedImage };
             } catch {
               return p;
             }
           }
           return p;
-        })
+        }),
       );
 
       const updatedEntry: DatasetEntry = {
@@ -1660,9 +1910,9 @@ export default function DatasetCollection() {
     }
   };
 
-  const patternBreakdown = Object.entries(statistics.categoryBreakdown || {}).sort(
-    (a, b) => b[1] - a[1],
-  );
+  const patternBreakdown = Object.entries(
+    statistics.categoryBreakdown || {},
+  ).sort((a, b) => b[1] - a[1]);
 
   const patternFilterOptions = [
     { label: 'All Patterns', value: 'ALL' },
@@ -1721,7 +1971,11 @@ export default function DatasetCollection() {
 
         <Row gutter={16} style={{ marginBottom: 12 }}>
           <Col span={12}>
-            <Card size="small" title="Pattern Counts" bodyStyle={{ padding: 12 }}>
+            <Card
+              size="small"
+              title="Pattern Counts"
+              bodyStyle={{ padding: 12 }}
+            >
               {patternBreakdown.length === 0 ? (
                 <Text type="secondary">No patterns detected yet.</Text>
               ) : (
@@ -1736,7 +1990,11 @@ export default function DatasetCollection() {
             </Card>
           </Col>
           <Col span={12}>
-            <Card size="small" title="Filter by Pattern" bodyStyle={{ padding: 12 }}>
+            <Card
+              size="small"
+              title="Filter by Pattern"
+              bodyStyle={{ padding: 12 }}
+            >
               <Select
                 style={{ minWidth: 240 }}
                 options={patternFilterOptions}
@@ -1767,9 +2025,13 @@ export default function DatasetCollection() {
           <Button
             icon={<FileTextOutlined />}
             onClick={handleAutoDiscoverLinks}
-            disabled={isProcessingQueue || isRecursiveCrawling || !readyState.isReady}
+            disabled={
+              isProcessingQueue || isRecursiveCrawling || !readyState.isReady
+            }
           >
-            {isRecursiveCrawling ? '🕷️ Crawling Website...' : 'Batch Process (Auto Crawl)'}
+            {isRecursiveCrawling
+              ? '🕷️ Crawling Website...'
+              : 'Batch Process (Auto Crawl)'}
           </Button>
           <Button
             icon={<DownloadOutlined />}
@@ -1808,7 +2070,11 @@ export default function DatasetCollection() {
             onClick={handleExportCOCO}
             loading={exportingBundle}
             disabled={entries.length === 0}
-            style={{ backgroundColor: '#722ed1', borderColor: '#722ed1', color: '#fff' }}
+            style={{
+              backgroundColor: '#722ed1',
+              borderColor: '#722ed1',
+              color: '#fff',
+            }}
           >
             Export COCO Format
           </Button>
@@ -1817,7 +2083,11 @@ export default function DatasetCollection() {
             onClick={handleExportYOLO}
             loading={exportingBundle}
             disabled={entries.length === 0}
-            style={{ backgroundColor: '#eb2f96', borderColor: '#eb2f96', color: '#fff' }}
+            style={{
+              backgroundColor: '#eb2f96',
+              borderColor: '#eb2f96',
+              color: '#fff',
+            }}
           >
             Export YOLO Format
           </Button>
@@ -1843,7 +2113,9 @@ export default function DatasetCollection() {
       {crawlProgress && (
         <Card style={{ marginBottom: 16, border: '2px solid #1890ff' }}>
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Text strong style={{ fontSize: '16px' }}>🕷️ Full Website Crawl in Progress</Text>
+            <Text strong style={{ fontSize: '16px' }}>
+              🕷️ Full Website Crawl in Progress
+            </Text>
             <Row gutter={16}>
               <Col span={6}>
                 <Statistic
@@ -1867,12 +2139,19 @@ export default function DatasetCollection() {
                 />
               </Col>
             </Row>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: 8 }}>
-              <strong>Current:</strong> {crawlProgress.currentUrl.length > 80
-                ? crawlProgress.currentUrl.substring(0, 80) + '...'
+            <Text
+              type="secondary"
+              style={{ fontSize: '12px', display: 'block', marginTop: 8 }}
+            >
+              <strong>Current:</strong>{' '}
+              {crawlProgress.currentUrl.length > 80
+                ? `${crawlProgress.currentUrl.substring(0, 80)}...`
                 : crawlProgress.currentUrl}
             </Text>
-            <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginTop: 4 }}>
+            <Text
+              type="secondary"
+              style={{ fontSize: '11px', display: 'block', marginTop: 4 }}
+            >
               This may take 10-30 minutes. Please keep this window open.
             </Text>
           </Space>
@@ -1889,10 +2168,16 @@ export default function DatasetCollection() {
             <Text strong>
               Processing {progress.current} of {progress.total}
             </Text>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+            <Text
+              type="secondary"
+              style={{ fontSize: '12px', display: 'block' }}
+            >
               {progress.status}
             </Text>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+            <Text
+              type="secondary"
+              style={{ fontSize: '12px', display: 'block' }}
+            >
               {progress.url}
             </Text>
           </Space>
@@ -1912,7 +2197,9 @@ export default function DatasetCollection() {
               <Card style={{ width: '100%' }}>
                 <div className="entry-header">
                   <div>
-                    <Text strong>{entry.metadata?.pageTitle || 'Untitled'}</Text>
+                    <Text strong>
+                      {entry.metadata?.pageTitle || 'Untitled'}
+                    </Text>
                     <br />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
                       {entry.url}
@@ -1967,12 +2254,22 @@ export default function DatasetCollection() {
                           <Text code>{pattern.evidence}</Text>
                         </Paragraph>
                         {pattern.confidence !== undefined && (
-                          <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: '12px', display: 'block' }}
+                          >
                             Confidence: {(pattern.confidence * 100).toFixed(0)}%
                           </Text>
                         )}
                         {pattern.bbox && pattern.bbox.length === 4 && (
-                          <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: 4 }}>
+                          <Text
+                            type="secondary"
+                            style={{
+                              fontSize: '12px',
+                              display: 'block',
+                              marginTop: 4,
+                            }}
+                          >
                             Bounding Box: [{pattern.bbox.join(', ')}]
                           </Text>
                         )}
@@ -2013,4 +2310,3 @@ export default function DatasetCollection() {
     </div>
   );
 }
-

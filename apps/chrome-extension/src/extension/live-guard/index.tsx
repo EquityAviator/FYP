@@ -3,21 +3,24 @@
  * Real-time dark pattern detection and consumer protection for active tab
  */
 
-import { SafetyOutlined, ClearOutlined } from '@ant-design/icons';
+import { ClearOutlined, SafetyOutlined } from '@ant-design/icons';
 import './index.less';
-import { Button, Card, message, Space, Spin, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
-import { getDarkPatternPrompt } from '../../utils/analysisEngine';
-import { getDebug } from '@darkpatternhunter/shared/logger';
-import type { ChatCompletionMessageParam } from 'openai/resources/index';
-import { AIActionType, callAIWithObjectResponse } from '@darkpatternhunter/core/ai-model';
 import {
-  getActiveModelConfig,
-  getAIConfig,
-  isLocalServerReachable,
-  type AIConfig,
-} from '../../utils/aiConfig';
+  AIActionType,
+  callAIWithObjectResponse,
+} from '@darkpatternhunter/core/ai-model';
+import { getDebug } from '@darkpatternhunter/shared/logger';
+import { Button, Card, Space, Spin, Tag, Typography, message } from 'antd';
+import type { ChatCompletionMessageParam } from 'openai/resources/index';
+import { useEffect, useState } from 'react';
 import { useGlobalAIConfig } from '../../hooks/useGlobalAIConfig';
+import {
+  type AIConfig,
+  getAIConfig,
+  getActiveModelConfig,
+  isLocalServerReachable,
+} from '../../utils/aiConfig';
+import { getDarkPatternPrompt } from '../../utils/analysisEngine';
 
 const { Title, Text, Paragraph } = Typography;
 const debug = getDebug('live-guard');
@@ -54,11 +57,17 @@ interface LiveGuardDetectionResponse {
 
 export function LiveGuard() {
   const [isScanning, setIsScanning] = useState(false);
-  const [detectedPatterns, setDetectedPatterns] = useState<DetectedPattern[]>([]);
+  const [detectedPatterns, setDetectedPatterns] = useState<DetectedPattern[]>(
+    [],
+  );
   const [error, setError] = useState<string | null>(null);
 
   // Use global AI configuration hook
-  const { config, readyState, isLoading: isConfigLoading } = useGlobalAIConfig();
+  const {
+    config,
+    readyState,
+    isLoading: isConfigLoading,
+  } = useGlobalAIConfig();
 
   /**
    * Capture current tab screenshot and DOM
@@ -72,7 +81,10 @@ export function LiveGuard() {
   } | null> => {
     try {
       // Get current tab
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (!tab?.id) {
         throw new Error('No active tab found');
       }
@@ -217,24 +229,29 @@ IMPORTANT: Return a JSON object with the following structure:
       ];
 
       // Call AI with active model config
-      const response = await callAIWithObjectResponse<LiveGuardDetectionResponse>(
-        messages,
-        AIActionType.EXTRACT_DATA,
-        modelConfig,
-      );
+      const response =
+        await callAIWithObjectResponse<LiveGuardDetectionResponse>(
+          messages,
+          AIActionType.EXTRACT_DATA,
+          modelConfig,
+        );
 
       // Add counter-measures to patterns if not provided
       const patternsWithCounterMeasures = response.content.patterns.map(
         (pattern) => ({
           ...pattern,
-          counterMeasure: pattern.counterMeasure || generateCounterMeasure(pattern),
+          counterMeasure:
+            pattern.counterMeasure || generateCounterMeasure(pattern),
         }),
       );
 
       setDetectedPatterns(patternsWithCounterMeasures);
 
       // Send highlights to content script with screenshot size
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, {
           action: LIVE_GUARD_MESSAGES.SHOW_HIGHLIGHTS,
@@ -283,7 +300,7 @@ IMPORTANT: Return a JSON object with the following structure:
         '✅ Action: This design makes it hard to compare prices. Consider opening multiple tabs.',
       'Dead End/Roach Motel':
         '✅ Action: You may be trapped. Look for a way to exit or cancel.',
-      'Nagging':
+      Nagging:
         '✅ Action: You can dismiss this. It will appear again if you ignore it.',
       'Infinite Scrolling':
         '✅ Action: Take breaks. Infinite scrolling is designed to keep you engaged.',
@@ -302,7 +319,10 @@ IMPORTANT: Return a JSON object with the following structure:
    */
   const clearHighlights = async () => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, {
           action: LIVE_GUARD_MESSAGES.CLEAR_HIGHLIGHTS,
@@ -322,7 +342,10 @@ IMPORTANT: Return a JSON object with the following structure:
    */
   const focusPattern = async (patternIndex: number) => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, {
           action: LIVE_GUARD_MESSAGES.FOCUS_PATTERN,
@@ -386,8 +409,14 @@ IMPORTANT: Return a JSON object with the following structure:
 
           {detectedPatterns.length > 0 && (
             <div style={{ marginTop: 16 }}>
-              <Title level={5}>Detected Patterns ({detectedPatterns.length})</Title>
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Title level={5}>
+                Detected Patterns ({detectedPatterns.length})
+              </Title>
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: '100%' }}
+              >
                 {detectedPatterns.map((pattern, index) => (
                   <Card
                     key={index}

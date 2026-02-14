@@ -5,15 +5,15 @@
 
 import { getDebug } from '@darkpatternhunter/shared/logger';
 import {
-  getCanvasToDomCoords,
-  getScrollPosition,
-  getViewportSize,
-  getDevicePixelRatio,
-  isValidBbox,
   type BBox,
   type ScreenshotSize,
-  type ViewportSize,
   type ScrollPosition,
+  type ViewportSize,
+  getCanvasToDomCoords,
+  getDevicePixelRatio,
+  getScrollPosition,
+  getViewportSize,
+  isValidBbox,
 } from '../../utils/coordinateMapping';
 
 const debug = getDebug('live-guard-content');
@@ -391,7 +391,7 @@ function hideTooltip(): void {
 function showHighlights(
   patterns: DetectedPattern[],
   screenshotSize?: ScreenshotSize,
-  isNormalized: boolean = true,
+  isNormalized = true,
 ): void {
   clearHighlights();
 

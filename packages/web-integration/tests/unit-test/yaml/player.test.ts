@@ -9,7 +9,11 @@ import type {
   GroupedActionDump,
   MidsceneYamlScriptWebEnv,
 } from '@darkpatternhunter/core';
-import { ScriptPlayer, buildYaml, parseYamlScript } from '@darkpatternhunter/core/yaml';
+import {
+  ScriptPlayer,
+  buildYaml,
+  parseYamlScript,
+} from '@darkpatternhunter/core/yaml';
 import { getMidsceneRunSubDir } from '@darkpatternhunter/shared/common';
 import { uuid } from '@darkpatternhunter/shared/utils';
 import { type MockedFunction, describe, expect, test, vi } from 'vitest';

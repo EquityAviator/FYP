@@ -1,4 +1,7 @@
-import { IndexedDBManager, withErrorHandling } from '@darkpatternhunter/shared/baseDB';
+import {
+  IndexedDBManager,
+  withErrorHandling,
+} from '@darkpatternhunter/shared/baseDB';
 import JSZip from 'jszip';
 
 // Database configuration
@@ -203,7 +206,8 @@ export const exportTextDatasetAsJSONL = async (): Promise<string> => {
         description: pattern.description,
         dom_excerpt: entry.dom,
         research_tags: {
-          isPakistaniEcommerce: entry.metadata?.researchContext?.isPakistaniEcommerce,
+          isPakistaniEcommerce:
+            entry.metadata?.researchContext?.isPakistaniEcommerce,
           modelUsed: entry.metadata?.researchContext?.modelUsed,
           analysisVersion: entry.metadata?.researchContext?.analysisVersion,
         },
@@ -316,7 +320,9 @@ export const exportForUITarsFineTuning = async (): Promise<Blob> => {
   };
 
   // Helper to get image dimensions
-  const getImageDimensions = (dataUrl: string): Promise<{ w: number; h: number }> => {
+  const getImageDimensions = (
+    dataUrl: string,
+  ): Promise<{ w: number; h: number }> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve({ w: img.width, h: img.height });
@@ -369,10 +375,7 @@ export const exportForUITarsFineTuning = async (): Promise<Blob> => {
       const normH = normalize(h, height);
 
       // Construct proper UI-TARS prompt and response
-      const systemPrompt =
-        '[SYSTEM] You are UI-TARS, an assistant that detects deceptive dark patterns in web interfaces.\n\n[INSTRUCTION] Analyze this webpage screenshot and identify any dark patterns present.\n\n[SCREENSHOT] ' +
-        imagePath +
-        '\n\n[RESPONSE]';
+      const systemPrompt = `[SYSTEM] You are UI-TARS, an assistant that detects deceptive dark patterns in web interfaces.\n\n[INSTRUCTION] Analyze this webpage screenshot and identify any dark patterns present.\n\n[SCREENSHOT] ${imagePath}\n\n[RESPONSE]`;
 
       const category = pattern.type.toUpperCase().replace(/ /g, '_'); // e.g., "ACTIVITY MESSAGE"
 
@@ -393,15 +396,21 @@ export const exportForUITarsFineTuning = async (): Promise<Blob> => {
   }
 
   zip.file('processed.jsonl', jsonlLines.join('\n'));
-  zip.file('dataset_info.json', JSON.stringify({
-    total_images: imageIdCounter,
-    total_annotations: annotationIdCounter,
-    created_at: new Date().toISOString(),
-    format: 'uitars_standard_web',
-    notes: 'Full screenshots with bounding box annotations in UI-TARS JSONL format.'
-  }, null, 2));
+  zip.file(
+    'dataset_info.json',
+    JSON.stringify(
+      {
+        total_images: imageIdCounter,
+        total_annotations: annotationIdCounter,
+        created_at: new Date().toISOString(),
+        format: 'uitars_standard_web',
+        notes:
+          'Full screenshots with bounding box annotations in UI-TARS JSONL format.',
+      },
+      null,
+      2,
+    ),
+  );
 
   return zip.generateAsync({ type: 'blob' });
 };
-
-

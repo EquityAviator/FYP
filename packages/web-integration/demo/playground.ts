@@ -52,8 +52,7 @@ async function main() {
       });
 
       const agent = new PuppeteerAgent(page, {
-        cacheId:
-          process.env.PLAYGROUND_CACHE_ID ?? 'playground-workflow-test',
+        cacheId: process.env.PLAYGROUND_CACHE_ID ?? 'playground-workflow-test',
       });
 
       // 👀 launch playground for the agent

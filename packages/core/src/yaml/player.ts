@@ -1,6 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { assert, ifInBrowser, ifInWorker } from '@darkpatternhunter/shared/utils';
+import {
+  assert,
+  ifInBrowser,
+  ifInWorker,
+} from '@darkpatternhunter/shared/utils';
 
 // previous defined yaml flow, as a helper
 interface MidsceneYamlFlowItemAIInput extends LocateOption {

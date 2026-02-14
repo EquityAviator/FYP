@@ -1,17 +1,17 @@
 /**
  * Analysis Engine for Dark Pattern Detection
- * 
+ *
  * This module provides utilities to analyze stored dataset entries using AI models
  * to detect dark patterns in web interfaces.
  */
 
-import type { ChatCompletionMessageParam } from 'openai/resources/index';
 import { AIActionType } from '@darkpatternhunter/core/ai-model';
 import { callAIWithObjectResponse } from '@darkpatternhunter/core/ai-model';
 import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { getDebug } from '@darkpatternhunter/shared/logger';
+import type { ChatCompletionMessageParam } from 'openai/resources/index';
 
-import type { DatasetEntry, DarkPattern } from './datasetDB';
+import type { DarkPattern, DatasetEntry } from './datasetDB';
 import { getDatasetEntries, storeDatasetEntry } from './datasetDB';
 
 const debug = getDebug('analysis:engine');
@@ -155,7 +155,9 @@ Return your analysis as a JSON object following this structure:
 /**
  * Get the dark pattern prompt in the specified language
  */
-export function getDarkPatternPrompt(language: 'english' | 'urdu' = 'english'): string {
+export function getDarkPatternPrompt(
+  language: 'english' | 'urdu' = 'english',
+): string {
   return DARK_PATTERN_PROMPT[language];
 }
 
@@ -171,8 +173,8 @@ function sleep(ms: number): Promise<void> {
  */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxAttempts: number = 3,
-  baseDelay: number = 1000,
+  maxAttempts = 3,
+  baseDelay = 1000,
 ): Promise<T> {
   let lastError: Error | undefined;
 
@@ -185,7 +187,7 @@ async function retryWithBackoff<T>(
       debug(`Attempt ${attempt} failed:`, error);
 
       if (attempt < maxAttempts) {
-        const delay = baseDelay * Math.pow(2, attempt - 1);
+        const delay = baseDelay * 2 ** (attempt - 1);
         debug(`Retrying in ${delay}ms...`);
         await sleep(delay);
       }
@@ -210,7 +212,9 @@ function validatePatternType(type: string): string {
 
   // Try partial match
   const partialMatch = DARK_PATTERN_CATEGORIES.find((cat) =>
-    normalizedType.toLowerCase().includes(cat.toLowerCase().split('/')[0].trim()),
+    normalizedType
+      .toLowerCase()
+      .includes(cat.toLowerCase().split('/')[0].trim()),
   );
 
   return partialMatch || normalizedType;
@@ -220,7 +224,12 @@ function validatePatternType(type: string): string {
  * Validate severity level
  */
 function validateSeverity(severity: string): DarkPattern['severity'] {
-  const validSeverities: DarkPattern['severity'][] = ['low', 'medium', 'high', 'critical'];
+  const validSeverities: DarkPattern['severity'][] = [
+    'low',
+    'medium',
+    'high',
+    'critical',
+  ];
   if (validSeverities.includes(severity as DarkPattern['severity'])) {
     return severity as DarkPattern['severity'];
   }
@@ -389,14 +398,19 @@ export function useBatchAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [total, setTotal] = React.useState(0);
-  const [results, setResults] = React.useState<Map<string, AnalysisResult>>(new Map());
+  const [results, setResults] = React.useState<Map<string, AnalysisResult>>(
+    new Map(),
+  );
   const [error, setError] = React.useState<string | null>(null);
 
   /**
    * Analyze multiple entries in batch
    */
   const analyzeBatch = React.useCallback(
-    async (entryIds: string[], options?: { language?: 'english' | 'urdu'; maxRetries?: number }) => {
+    async (
+      entryIds: string[],
+      options?: { language?: 'english' | 'urdu'; maxRetries?: number },
+    ) => {
       setIsAnalyzing(true);
       setProgress(0);
       setTotal(entryIds.length);
@@ -435,9 +449,14 @@ export function useBatchAnalysis() {
    * Analyze all pending entries
    */
   const analyzePendingEntries = React.useCallback(
-    async (options?: { language?: 'english' | 'urdu'; maxRetries?: number }) => {
+    async (options?: {
+      language?: 'english' | 'urdu';
+      maxRetries?: number;
+    }) => {
       const entries = await getDatasetEntries();
-      const pendingEntries = entries.filter((entry) => entry.patterns.length === 0);
+      const pendingEntries = entries.filter(
+        (entry) => entry.patterns.length === 0,
+      );
       const pendingIds = pendingEntries.map((entry) => entry.id);
 
       return analyzeBatch(pendingIds, options);

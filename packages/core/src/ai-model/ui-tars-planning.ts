@@ -4,7 +4,10 @@ import type {
   Size,
   UIContext,
 } from '@/types';
-import { type IModelConfig, UITarsModelVersion } from '@darkpatternhunter/shared/env';
+import {
+  type IModelConfig,
+  UITarsModelVersion,
+} from '@darkpatternhunter/shared/env';
 import { resizeImgBase64 } from '@darkpatternhunter/shared/img';
 import { getDebug } from '@darkpatternhunter/shared/logger';
 import { transformHotkeyInput } from '@darkpatternhunter/shared/us-keyboard-layout';

@@ -54,7 +54,10 @@ import {
   ModelConfigManager,
   globalModelConfigManager,
 } from '@darkpatternhunter/shared/env';
-import { imageInfoOfBase64, resizeImgBase64 } from '@darkpatternhunter/shared/img';
+import {
+  imageInfoOfBase64,
+  resizeImgBase64,
+} from '@darkpatternhunter/shared/img';
 import { getDebug } from '@darkpatternhunter/shared/logger';
 import { assert } from '@darkpatternhunter/shared/utils';
 // import type { AndroidDeviceInputOpt } from '../device';

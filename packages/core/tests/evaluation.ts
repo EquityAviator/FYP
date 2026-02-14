@@ -2,7 +2,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describeUserPage } from '@/index';
 import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
-import { imageInfoOfBase64, localImg2Base64 } from '@darkpatternhunter/shared/img';
+import {
+  imageInfoOfBase64,
+  localImg2Base64,
+} from '@darkpatternhunter/shared/img';
 
 export async function buildContext(
   targetDir: string,

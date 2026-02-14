@@ -19,21 +19,39 @@ export const apiMetadata = {
   },
   aiTap: { group: 'interaction', title: 'Click element to test interaction' },
   aiDoubleClick: { group: 'interaction', title: 'Double-click element' },
-  aiHover: { group: 'interaction', title: 'Hover over element to reveal hidden content' },
+  aiHover: {
+    group: 'interaction',
+    title: 'Hover over element to reveal hidden content',
+  },
   aiInput: { group: 'interaction', title: 'Input text to test form behavior' },
   aiRightClick: { group: 'interaction', title: 'Right-click element' },
   aiKeyboardPress: { group: 'interaction', title: 'Press keyboard keys' },
-  aiScroll: { group: 'interaction', title: 'Scroll page to reveal hidden patterns' },
-  aiLocate: { group: 'interaction', title: 'Locate suspicious element on page' },
+  aiScroll: {
+    group: 'interaction',
+    title: 'Scroll page to reveal hidden patterns',
+  },
+  aiLocate: {
+    group: 'interaction',
+    title: 'Locate suspicious element on page',
+  },
   aiQuery: {
     group: 'extraction',
     title: 'Extract dark pattern data from UI elements',
   },
-  aiBoolean: { group: 'extraction', title: 'Check if dark pattern exists (true/false)' },
-  aiNumber: { group: 'extraction', title: 'Extract numeric value from deceptive element' },
+  aiBoolean: {
+    group: 'extraction',
+    title: 'Check if dark pattern exists (true/false)',
+  },
+  aiNumber: {
+    group: 'extraction',
+    title: 'Extract numeric value from deceptive element',
+  },
   aiString: { group: 'extraction', title: 'Extract text from UI element' },
   aiAsk: { group: 'extraction', title: 'Ask AI about dark patterns in the UI' },
-  aiAssert: { group: 'validation', title: 'Verify if dark pattern condition exists' },
+  aiAssert: {
+    group: 'validation',
+    title: 'Verify if dark pattern condition exists',
+  },
   aiWaitFor: { group: 'validation', title: 'Wait for dark pattern to appear' },
 };
 

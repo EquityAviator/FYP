@@ -4,7 +4,10 @@ import { join } from 'node:path';
 import { PlaywrightAgent, type PlaywrightWebPage } from '@/playwright/index';
 import type { WebPageAgentOpt } from '@/web-element';
 import type { Cache } from '@darkpatternhunter/core';
-import type { AgentOpt, Agent as PageAgent } from '@darkpatternhunter/core/agent';
+import type {
+  AgentOpt,
+  Agent as PageAgent,
+} from '@darkpatternhunter/core/agent';
 import { processCacheConfig } from '@darkpatternhunter/core/utils';
 import {
   DEFAULT_WAIT_FOR_NAVIGATION_TIMEOUT,

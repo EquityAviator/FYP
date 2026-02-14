@@ -1,5 +1,5 @@
-import { PromptTemplate } from '@langchain/core/prompts';
 import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
+import { PromptTemplate } from '@langchain/core/prompts';
 import type { ResponseFormatJSONSchema } from 'openai/resources/index';
 import { bboxDescription } from './common';
 export function systemPromptToLocateElement(vlMode: TVlModeTypes | undefined) {

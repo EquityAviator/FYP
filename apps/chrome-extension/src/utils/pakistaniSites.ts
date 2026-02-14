@@ -23,13 +23,15 @@ export const PAKISTANI_ECOMMERCE_SITES = [
 export function isPakistaniEcommerceSite(url: string): boolean {
   if (!url) return false;
   const urlLower = url.toLowerCase();
-  return PAKISTANI_ECOMMERCE_SITES.some(site => urlLower.includes(site));
+  return PAKISTANI_ECOMMERCE_SITES.some((site) => urlLower.includes(site));
 }
 
 export function getSiteName(url: string): string | null {
   if (!url) return null;
   const urlLower = url.toLowerCase();
-  const site = PAKISTANI_ECOMMERCE_SITES.find(site => urlLower.includes(site));
+  const site = PAKISTANI_ECOMMERCE_SITES.find((site) =>
+    urlLower.includes(site),
+  );
   return site || null;
 }
 
@@ -37,11 +39,11 @@ export function validateUrl(url: string): { valid: boolean; error?: string } {
   if (!url || !url.trim()) {
     return { valid: false, error: 'URL is required' };
   }
-  
+
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     return { valid: false, error: 'URL must start with http:// or https://' };
   }
-  
+
   try {
     new URL(url);
     return { valid: true };
@@ -49,13 +51,3 @@ export function validateUrl(url: string): { valid: boolean; error?: string } {
     return { valid: false, error: 'Invalid URL format' };
   }
 }
-
-
-
-
-
-
-
-
-
-

@@ -10,7 +10,11 @@ import {
   ExportOutlined,
   LoadingOutlined,
 } from '@ant-design/icons';
-import type { BaseElement, LocateResultElement, Rect } from '@darkpatternhunter/core';
+import type {
+  BaseElement,
+  LocateResultElement,
+  Rect,
+} from '@darkpatternhunter/core';
 import { treeToList } from '@darkpatternhunter/shared/extractor';
 import { Dropdown, Spin, Switch, Tooltip } from 'antd';
 import GlobalPerspectiveIcon from '../../icons/global-perspective.svg';

@@ -315,9 +315,9 @@ export default function Bridge() {
               <h2 className="mode-title">Bridge Mode</h2>
             </div>
             <p className="bridge-mode-description">
-              In Bridge Mode, you can control this browser by the SDK
-              running in the local terminal. This is useful for interacting both
-              through scripts and manually, or to reuse cookies.
+              In Bridge Mode, you can control this browser by the SDK running in
+              the local terminal. This is useful for interacting both through
+              scripts and manually, or to reuse cookies.
             </p>
             {messageList.length > 0 && (
               <List

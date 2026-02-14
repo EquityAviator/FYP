@@ -85,7 +85,7 @@ export function getCanvasToDomCoords(
   viewportSize: ViewportSize,
   scrollPosition: ScrollPosition,
   dpr: number = window.devicePixelRatio || 1,
-  isNormalized: boolean = true,
+  isNormalized = true,
 ): CoordinateMappingResult {
   debug('Mapping bbox to DOM coordinates:', {
     bbox,
@@ -188,7 +188,7 @@ export function snapBboxToElement(
   viewportSize: ViewportSize,
   scrollPosition: ScrollPosition,
   dpr: number = window.devicePixelRatio || 1,
-  isNormalized: boolean = true,
+  isNormalized = true,
 ): BBox | null {
   const result = getCanvasToDomCoords(
     bbox,

@@ -43,13 +43,7 @@ function loadEnv(filePath) {
 loadEnv(ENV_PATH);
 
 const args = minimist(process.argv.slice(2), {
-  string: [
-    'url',
-    'port',
-    'cache-id',
-    'viewport-width',
-    'viewport-height',
-  ],
+  string: ['url', 'port', 'cache-id', 'viewport-width', 'viewport-height'],
   boolean: ['headed', 'open-browser'],
   alias: {
     url: 'u',
@@ -194,4 +188,3 @@ main().catch((error) => {
   console.error('Failed to start real-time playground:', error);
   process.exit(1);
 });
-

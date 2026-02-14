@@ -122,7 +122,12 @@ const parseConfig = (configString: string) => {
  */
 export type ServiceModeType = 'Server' | 'In-Browser' | 'In-Browser-Extension'; // | 'Extension';
 
-export type PopupTabType = 'playground' | 'bridge' | 'recorder' | 'dataset' | 'live-guard';
+export type PopupTabType =
+  | 'playground'
+  | 'bridge'
+  | 'recorder'
+  | 'dataset'
+  | 'live-guard';
 
 export const useEnvConfig = create<{
   serviceMode: ServiceModeType;

@@ -11,7 +11,10 @@ import {
   PushpinOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import type { CodeGenerationChunk, StreamingCallback } from '@darkpatternhunter/core';
+import type {
+  CodeGenerationChunk,
+  StreamingCallback,
+} from '@darkpatternhunter/core';
 import type { ChromeRecordedEvent } from '@darkpatternhunter/recorder';
 import { globalModelConfigManager } from '@darkpatternhunter/shared/env';
 import { Button, Select, Tooltip, Typography, message } from 'antd';
