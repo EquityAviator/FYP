@@ -104,10 +104,13 @@ __ai_responses__/
 
 .nx/cache
 .nx/workspace-data
-# Midscene.js dump files
+# Midscene.js / DPH dump files
 midscene_run
 midscene_run/report
 midscene_run/dump
+dph_run
+dph_run/report
+dph_run/dump
 
 *.ignore.png
 extension_output

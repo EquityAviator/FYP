@@ -1,10 +1,10 @@
-import {
-  DPH_MODEL_NAME,
-  DPH_OPENAI_BASE_URL,
-  DPH_OPENAI_API_KEY,
-} from '@darkpatternhunter/shared/env';
 import { Agent } from '@/agent/agent';
 import type { AbstractInterface } from '@/types';
+import {
+  DPH_MODEL_NAME,
+  DPH_OPENAI_API_KEY,
+  DPH_OPENAI_BASE_URL,
+} from '@darkpatternhunter/shared/env';
 import { describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies

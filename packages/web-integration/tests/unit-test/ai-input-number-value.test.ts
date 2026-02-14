@@ -1,10 +1,10 @@
+import type { AbstractWebPage } from '@/web-page';
+import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
 import {
   DPH_MODEL_NAME,
   DPH_OPENAI_API_KEY,
   DPH_OPENAI_BASE_URL,
 } from '@darkpatternhunter/shared/env';
-import type { AbstractWebPage } from '@/web-page';
-import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 declare const __VERSION__: string;
