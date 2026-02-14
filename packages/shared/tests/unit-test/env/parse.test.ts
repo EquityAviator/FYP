@@ -90,7 +90,7 @@ describe('parseVlModeAndUiTarsFromGlobalConfig', () => {
       [MIDSCENE_USE_QWEN_VL]: '1',
     };
     expect(() => parseVlModeAndUiTarsFromGlobalConfig(provider)).toThrow(
-      'Only one vision mode can be enabled at a time. Currently enabled modes: MIDSCENE_USE_DOUBAO_VISION, MIDSCENE_USE_QWEN_VL. Please disable all but one mode.',
+      'Only one vision mode can be enabled at a time. Currently enabled modes: DPH_USE_DOUBAO_VISION, DPH_USE_QWEN_VL. Please disable all but one mode.',
     );
   });
 

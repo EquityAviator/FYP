@@ -41,7 +41,7 @@ describe('overrideAIConfig', () => {
         [MIDSCENE_MODEL_NAME]: 123 as any,
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: Failed to override AI config, value for key MIDSCENE_MODEL_NAME must be a string, but got with type number]',
+      '[Error: Failed to override AI config, value for key DPH_MODEL_NAME must be a string, but got with type number]',
     );
 
     expect(() =>
@@ -49,7 +49,7 @@ describe('overrideAIConfig', () => {
         [MIDSCENE_MODEL_NAME]: true as any,
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: Failed to override AI config, value for key MIDSCENE_MODEL_NAME must be a string, but got with type boolean]',
+      '[Error: Failed to override AI config, value for key DPH_MODEL_NAME must be a string, but got with type boolean]',
     );
 
     expect(() =>
@@ -57,7 +57,7 @@ describe('overrideAIConfig', () => {
         [MIDSCENE_MODEL_NAME]: {} as any,
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: Failed to override AI config, value for key MIDSCENE_MODEL_NAME must be a string, but got with type object]',
+      '[Error: Failed to override AI config, value for key DPH_MODEL_NAME must be a string, but got with type object]',
     );
   });
 
@@ -163,7 +163,7 @@ describe('overrideAIConfig', () => {
     });
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Warning: try to override AI config with key MIDSCENE_ADB_PATH ,but it has been read.',
+      'Warning: try to override AI config with key DPH_ADB_PATH ,but it has been read.',
     );
 
     consoleSpy.mockRestore();
@@ -322,7 +322,7 @@ describe('getEnvConfigValue', () => {
         MIDSCENE_MODEL_NAME,
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: getEnvConfigValue with key MIDSCENE_MODEL_NAME is not supported.]',
+      '[Error: getEnvConfigValue with key DPH_MODEL_NAME is not supported.]',
     );
 
     expect(() =>
@@ -331,7 +331,7 @@ describe('getEnvConfigValue', () => {
         MIDSCENE_MODEL_NAME,
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: getEnvConfigInNumber with key MIDSCENE_MODEL_NAME is not supported]',
+      '[Error: getEnvConfigInNumber with key DPH_MODEL_NAME is not supported]',
     );
 
     expect(() =>
@@ -340,7 +340,7 @@ describe('getEnvConfigValue', () => {
         MIDSCENE_MODEL_NAME,
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: getEnvConfigInBoolean with key MIDSCENE_MODEL_NAME is not supported]',
+      '[Error: getEnvConfigInBoolean with key DPH_MODEL_NAME is not supported]',
     );
   });
 

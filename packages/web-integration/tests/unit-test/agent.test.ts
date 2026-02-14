@@ -3,7 +3,12 @@ import path from 'node:path';
 import type { AbstractWebPage } from '@/web-page';
 import type { GroupedActionDump } from '@darkpatternhunter/core';
 import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
-import { globalConfigManager } from '@darkpatternhunter/shared/env';
+import {
+  DPH_MODEL_NAME,
+  DPH_OPENAI_API_KEY,
+  DPH_OPENAI_BASE_URL,
+  globalConfigManager,
+} from '@darkpatternhunter/shared/env';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 declare const __VERSION__: string;
@@ -58,9 +63,9 @@ const mockPage = {
 } as unknown as AbstractWebPage;
 
 const mockedModelConfigFnResult = {
-  MIDSCENE_MODEL_NAME: 'mock-model',
-  MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-  MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+  [DPH_MODEL_NAME]: 'mock-model',
+  [DPH_OPENAI_API_KEY]: 'mock-api-key',
+  [DPH_OPENAI_BASE_URL]: 'mock-base-url',
 };
 
 const modelConfigCalcByMockedModelConfigFnResult = {

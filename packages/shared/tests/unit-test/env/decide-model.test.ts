@@ -9,15 +9,15 @@ describe('decideModelConfig from modelConfig fn', () => {
     expect(() =>
       decideModelConfigFromIntentConfig('VQA', {}),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The return value of agent.modelConfig do not have a valid value with key MIDSCENE_MODEL_NAME.]',
+      '[Error: The return value of agent.modelConfig do not have a valid value with key DPH_MODEL_NAME.]',
     );
   });
 
   it('return full config for VQA', () => {
     const result = decideModelConfigFromIntentConfig('VQA', {
-      MIDSCENE_VQA_MODEL_NAME: 'vqa-model',
-      MIDSCENE_VQA_OPENAI_BASE_URL: 'mock-url',
-      MIDSCENE_VQA_OPENAI_API_KEY: 'mock-key',
+      DPH_VQA_MODEL_NAME: 'vqa-model',
+      DPH_VQA_OPENAI_BASE_URL: 'mock-url',
+      DPH_VQA_OPENAI_API_KEY: 'mock-key',
     });
     expect(result).toMatchInlineSnapshot(`
       {
@@ -39,9 +39,9 @@ describe('decideModelConfig from modelConfig fn', () => {
 
   it('return default config', () => {
     const result = decideModelConfigFromIntentConfig('VQA', {
-      MIDSCENE_MODEL_NAME: 'default-model',
-      MIDSCENE_OPENAI_BASE_URL: 'mock-url',
-      MIDSCENE_OPENAI_API_KEY: 'mock-key',
+      DPH_MODEL_NAME: 'default-model',
+      DPH_OPENAI_BASE_URL: 'mock-url',
+      DPH_OPENAI_API_KEY: 'mock-key',
     });
     expect(result).toMatchInlineSnapshot(`
       {
@@ -66,26 +66,26 @@ describe('decideModelConfig from env', () => {
   const stubEnvConfig = {
     OPENAI_API_KEY: 'keyInEnv',
     OPENAI_BASE_URL: 'urlInInEnv',
-    MIDSCENE_MODEL_NAME: 'modelInEnv',
+    DPH_MODEL_NAME: 'modelInEnv',
   };
 
   it('declare lacking planning env', () => {
     expect(() =>
       decideModelConfigFromEnv('planning', {
         ...stubEnvConfig,
-        MIDSCENE_PLANNING_MODEL_NAME: 'planning-model',
+        DPH_PLANNING_MODEL_NAME: 'planning-model',
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The MIDSCENE_PLANNING_OPENAI_API_KEY must be a non-empty string because of the MIDSCENE_PLANNING_MODEL_NAME is declared as planning-model in process.env, but got: undefined. Please check your config.]',
+      '[Error: The DPH_PLANNING_OPENAI_API_KEY must be a non-empty string because of the DPH_PLANNING_MODEL_NAME is declared as planning-model in process.env, but got: undefined. Please check your config.]',
     );
   });
 
   it('declare full planning env', () => {
     const result = decideModelConfigFromEnv('planning', {
       ...stubEnvConfig,
-      MIDSCENE_PLANNING_MODEL_NAME: 'planning-model',
-      MIDSCENE_PLANNING_OPENAI_API_KEY: 'planning-key',
-      MIDSCENE_PLANNING_OPENAI_BASE_URL: 'planning-url',
+      DPH_PLANNING_MODEL_NAME: 'planning-model',
+      DPH_PLANNING_OPENAI_API_KEY: 'planning-key',
+      DPH_PLANNING_OPENAI_BASE_URL: 'planning-url',
     });
     expect(result).toMatchInlineSnapshot(`
       {
@@ -138,7 +138,7 @@ describe('decideModelConfig from env', () => {
   it('default model is gpt-4o', () => {
     const result = decideModelConfigFromEnv('planning', {
       ...stubEnvConfig,
-      MIDSCENE_MODEL_NAME: '',
+      DPH_MODEL_NAME: '',
     });
     expect(result).toMatchInlineSnapshot(`
       {

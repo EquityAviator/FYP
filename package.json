@@ -6,7 +6,7 @@
     "dev": "nx run-many --target=build:watch --exclude=chrome-extension --verbose --parallel=6",
     "build": "nx run-many --target=build --verbose",
     "build:skip-cache": "nx run-many --target=build --verbose --skip-nx-cache",
-    "test": "nx run-many --target=test --projects=@darkpatternhunter/core,@darkpatternhunter/shared,@darkpatternhunter/visualizer,@darkpatternhunter/web,@darkpatternhunter/playground --verbose",
+    "test": "nx run-many --target=test --projects=@darkpatternhunter/core,@darkpatternhunter/shared,@darkpatternhunter/web,@darkpatternhunter/playground --verbose",
     "test:ai": "nx run-many --target=test:ai --projects=@darkpatternhunter/core,@darkpatternhunter/web --verbose",
     "e2e": "nx run @darkpatternhunter/web:e2e --verbose --exclude-task-dependencies",
     "e2e:cache": "nx run @darkpatternhunter/web:e2e:cache --verbose  --exclude-task-dependencies",

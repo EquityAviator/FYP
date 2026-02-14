@@ -1,3 +1,8 @@
+import {
+  DPH_MODEL_NAME,
+  DPH_OPENAI_BASE_URL,
+  DPH_OPENAI_API_KEY,
+} from '@darkpatternhunter/shared/env';
 import { Agent } from '@/agent/agent';
 import type { AbstractInterface } from '@/types';
 import { describe, expect, it, vi } from 'vitest';
@@ -26,9 +31,9 @@ vi.mock('@darkpatternhunter/core', async () => {
 });
 
 const mockedModelConfigFnResult = {
-  MIDSCENE_MODEL_NAME: 'gpt-4o',
-  MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-  MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+  [DPH_MODEL_NAME]: 'gpt-4o',
+  [DPH_OPENAI_API_KEY]: 'mock-api-key',
+  [DPH_OPENAI_BASE_URL]: 'mock-base-url',
 };
 
 describe('VL Model Check for Different Interface Types', () => {
@@ -132,9 +137,9 @@ describe('VL Model Check for Different Interface Types', () => {
     } as unknown as AbstractInterface;
 
     const modelConfigWithVL = {
-      MIDSCENE_MODEL_NAME: 'gemini-2.0-flash-exp',
-      MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-      MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+      [DPH_MODEL_NAME]: 'gemini-2.0-flash-exp',
+      [DPH_OPENAI_API_KEY]: 'mock-api-key',
+      [DPH_OPENAI_BASE_URL]: 'mock-base-url',
       MIDSCENE_VL_MODE: 'gemini',
     };
 

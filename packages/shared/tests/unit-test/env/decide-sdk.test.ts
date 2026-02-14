@@ -24,7 +24,7 @@ describe('decideOpenaiSdkConfig', () => {
         valueAssert: createAssert('', 'modelConfig'),
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The MIDSCENE_OPENAI_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
+      '[Error: The DPH_OPENAI_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
     );
   });
 
@@ -61,7 +61,7 @@ describe('decideOpenaiSdkConfig', () => {
         valueAssert: createAssert('', 'modelConfig'),
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The MIDSCENE_AZURE_OPENAI_KEY must be a non-empty string, but got: undefined. Please check your config.]',
+      '[Error: The DPH_AZURE_OPENAI_KEY must be a non-empty string, but got: undefined. Please check your config.]',
     );
   });
   it('useAzureOpenai', () => {
@@ -101,7 +101,7 @@ describe('decideOpenaiSdkConfig', () => {
         valueAssert: createAssert('', 'modelConfig'),
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The MIDSCENE_ANTHROPIC_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
+      '[Error: The DPH_ANTHROPIC_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
     );
   });
   it('useAnthropicSdk', () => {
@@ -131,7 +131,7 @@ describe('decideOpenaiSdkConfig', () => {
         valueAssert: createAssert('', 'modelConfig'),
       }),
     ).toThrowErrorMatchingInlineSnapshot(
-      '[Error: The MIDSCENE_OPENAI_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
+      '[Error: The DPH_OPENAI_API_KEY must be a non-empty string, but got: undefined. Please check your config.]',
     );
   });
   it('default', () => {

@@ -1,7 +1,12 @@
 import type { WebPage } from '@/web-element';
 import { WebPageContextParser } from '@/web-element';
 import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
-import { globalConfigManager } from '@darkpatternhunter/shared/env';
+import {
+  DPH_MODEL_NAME,
+  DPH_OPENAI_API_KEY,
+  DPH_OPENAI_BASE_URL,
+  globalConfigManager,
+} from '@darkpatternhunter/shared/env';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WebUIContext } from '../../src';
 
@@ -67,9 +72,9 @@ describe('PageAgent freeze/unfreeze page context', () => {
       autoPrintReportMsg: false,
       modelConfig: () => {
         return {
-          MIDSCENE_MODEL_NAME: 'mock-model',
-          MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-          MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+          [DPH_MODEL_NAME]: 'mock-model',
+          [DPH_OPENAI_API_KEY]: 'mock-api-key',
+          [DPH_OPENAI_BASE_URL]: 'mock-base-url',
         };
       },
     });
@@ -166,9 +171,9 @@ describe('PageAgent freeze/unfreeze page context', () => {
         autoPrintReportMsg: false,
         modelConfig: () => {
           return {
-            MIDSCENE_MODEL_NAME: 'mock-model',
-            MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-            MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+            [DPH_MODEL_NAME]: 'mock-model',
+            [DPH_OPENAI_API_KEY]: 'mock-api-key',
+            [DPH_OPENAI_BASE_URL]: 'mock-base-url',
           };
         },
       });

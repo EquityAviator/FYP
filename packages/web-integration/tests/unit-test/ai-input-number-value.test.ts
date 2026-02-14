@@ -1,3 +1,8 @@
+import {
+  DPH_MODEL_NAME,
+  DPH_OPENAI_API_KEY,
+  DPH_OPENAI_BASE_URL,
+} from '@darkpatternhunter/shared/env';
 import type { AbstractWebPage } from '@/web-page';
 import { Agent as PageAgent } from '@darkpatternhunter/core/agent';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,9 +60,9 @@ const mockPage = {
 } as unknown as AbstractWebPage;
 
 const mockedModelConfigFnResult = {
-  MIDSCENE_MODEL_NAME: 'mock-model',
-  MIDSCENE_OPENAI_API_KEY: 'mock-api-key',
-  MIDSCENE_OPENAI_BASE_URL: 'mock-base-url',
+  [DPH_MODEL_NAME]: 'mock-model',
+  [DPH_OPENAI_API_KEY]: 'mock-api-key',
+  [DPH_OPENAI_BASE_URL]: 'mock-base-url',
 };
 
 // Mock task executor
