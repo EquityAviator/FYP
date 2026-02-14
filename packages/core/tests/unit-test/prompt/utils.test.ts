@@ -26,78 +26,81 @@ describe('prompt utils - describeUserPage', () => {
     'describe context ',
     { timeout: 10000 },
     async () => {
-    const context = await getContextFromFixture('taobao', {
-      vlMode,
-    });
-    const { description } = await describeUserPage(context.context, {
-      domIncluded: true,
-      visibleOnly: false,
-      vlMode,
-    });
+      const context = await getContextFromFixture('taobao', {
+        vlMode,
+      });
+      const { description } = await describeUserPage(context.context, {
+        domIncluded: true,
+        visibleOnly: false,
+        vlMode,
+      });
 
-    lengthOfDescription = description.length;
-    const stringLengthOfEachItem =
-      lengthOfDescription / treeToList(context.context.tree).length;
-    expect(description).toBeTruthy();
-    expect(stringLengthOfEachItem).toBeLessThan(250);
-  },
+      lengthOfDescription = description.length;
+      const stringLengthOfEachItem =
+        lengthOfDescription / treeToList(context.context.tree).length;
+      expect(description).toBeTruthy();
+      expect(stringLengthOfEachItem).toBeLessThan(250);
+    },
   );
 
   it.skipIf(!hasTaobaoFixture())(
     'describe context, truncateTextLength = 100, filterNonTextContent = true',
     async () => {
-    const context = await getContextFromFixture('taobao', {
-      vlMode,
-    });
+      const context = await getContextFromFixture('taobao', {
+        vlMode,
+      });
 
-    const { description } = await describeUserPage(context.context, {
-      truncateTextLength: 100,
-      filterNonTextContent: true,
-      domIncluded: true,
-      visibleOnly: false,
-      vlMode,
-    });
+      const { description } = await describeUserPage(context.context, {
+        truncateTextLength: 100,
+        filterNonTextContent: true,
+        domIncluded: true,
+        visibleOnly: false,
+        vlMode,
+      });
 
-    const stringLengthOfEachItem =
-      description.length / treeToList(context.context.tree).length;
-    expect(description).toBeTruthy();
-    expect(stringLengthOfEachItem).toBeLessThan(160);
-    expect(description.length).toBeLessThan(lengthOfDescription * 0.8);
-  },
+      const stringLengthOfEachItem =
+        description.length / treeToList(context.context.tree).length;
+      expect(description).toBeTruthy();
+      expect(stringLengthOfEachItem).toBeLessThan(160);
+      expect(description.length).toBeLessThan(lengthOfDescription * 0.8);
+    },
   );
 
   it.skipIf(!hasTaobaoFixture())(
     'describe context, domIncluded = "visible-only"',
     async () => {
-    const context = await getContextFromFixture('taobao', {
-      vlMode,
-    });
+      const context = await getContextFromFixture('taobao', {
+        vlMode,
+      });
 
-    const { description } = await describeUserPage(context.context, {
-      filterNonTextContent: true,
-      domIncluded: 'visible-only',
-      vlMode,
-    });
+      const { description } = await describeUserPage(context.context, {
+        filterNonTextContent: true,
+        domIncluded: 'visible-only',
+        vlMode,
+      });
 
-    expect(description).toBeTruthy();
-    expect(description.length).toBeLessThan(
-      treeToList(context.context.tree).length,
-    );
-  },
+      expect(description).toBeTruthy();
+      expect(description.length).toBeLessThan(
+        treeToList(context.context.tree).length,
+      );
+    },
   );
 
-  it.skipIf(!hasTaobaoFixture())('describe context with non-vl mode', async () => {
-    const context = await getContextFromFixture('taobao', {
-      vlMode: undefined,
-    });
-    const { description } = await describeUserPage(context.context, {
-      domIncluded: false,
-      vlMode: undefined,
-    });
+  it.skipIf(!hasTaobaoFixture())(
+    'describe context with non-vl mode',
+    async () => {
+      const context = await getContextFromFixture('taobao', {
+        vlMode: undefined,
+      });
+      const { description } = await describeUserPage(context.context, {
+        domIncluded: false,
+        vlMode: undefined,
+      });
 
-    // In non-vl mode, description should include page elements even when domIncluded is false
-    expect(description).toBeTruthy();
-  });
+      // In non-vl mode, description should include page elements even when domIncluded is false
+      expect(description).toBeTruthy();
+    },
+  );
 
   it.skipIf(!hasTaobaoFixture())('describe context with vl mode', async () => {
     const context = await getContextFromFixture('taobao', {
@@ -110,8 +113,7 @@ describe('prompt utils - describeUserPage', () => {
 
     // In vl mode, description should be empty if domIncluded is false
     expect(description).toBeFalsy();
-  },
-  );
+  });
 });
 
 describe('prompt utils - elementByPositionWithElementInfo', () => {
