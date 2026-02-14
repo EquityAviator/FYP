@@ -1,8 +1,8 @@
 {
   "name": "@darkpatternhunter/visualizer",
-  "version": "0.30.8",
-  "repository": "https://github.com/web-infra-dev/midscene",
-  "homepage": "https://midscenejs.com/",
+  "version": "1.0.0",
+  "repository": "https://github.com/darkpatternhunter/dark-pattern-hunter",
+  "homepage": "https://darkpatternhunter.dev/",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.mjs",

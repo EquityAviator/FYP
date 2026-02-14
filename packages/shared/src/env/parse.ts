@@ -1,9 +1,9 @@
 import {
-  MIDSCENE_USE_DOUBAO_VISION,
-  MIDSCENE_USE_GEMINI,
-  MIDSCENE_USE_QWEN3_VL,
-  MIDSCENE_USE_QWEN_VL,
-  MIDSCENE_USE_VLM_UI_TARS,
+  DPH_USE_DOUBAO_VISION,
+  DPH_USE_GEMINI,
+  DPH_USE_QWEN3_VL,
+  DPH_USE_QWEN_VL,
+  DPH_USE_VLM_UI_TARS,
   type TVlModeTypes,
   type TVlModeValues,
   UITarsModelVersion,
@@ -57,18 +57,18 @@ export const parseVlModeAndUiTarsFromGlobalConfig = (
   vlMode?: TVlModeTypes;
   uiTarsVersion?: UITarsModelVersion;
 } => {
-  const isDoubao = provider[MIDSCENE_USE_DOUBAO_VISION];
-  const isQwen = provider[MIDSCENE_USE_QWEN_VL];
-  const isQwen3 = provider[MIDSCENE_USE_QWEN3_VL];
-  const isUiTars = provider[MIDSCENE_USE_VLM_UI_TARS];
-  const isGemini = provider[MIDSCENE_USE_GEMINI];
+  const isDoubao = provider[DPH_USE_DOUBAO_VISION];
+  const isQwen = provider[DPH_USE_QWEN_VL];
+  const isQwen3 = provider[DPH_USE_QWEN3_VL];
+  const isUiTars = provider[DPH_USE_VLM_UI_TARS];
+  const isGemini = provider[DPH_USE_GEMINI];
 
   const enabledModes = [
-    isDoubao && MIDSCENE_USE_DOUBAO_VISION,
-    isQwen && MIDSCENE_USE_QWEN_VL,
-    isQwen3 && MIDSCENE_USE_QWEN3_VL,
-    isUiTars && MIDSCENE_USE_VLM_UI_TARS,
-    isGemini && MIDSCENE_USE_GEMINI,
+    isDoubao && DPH_USE_DOUBAO_VISION,
+    isQwen && DPH_USE_QWEN_VL,
+    isQwen3 && DPH_USE_QWEN3_VL,
+    isUiTars && DPH_USE_VLM_UI_TARS,
+    isGemini && DPH_USE_GEMINI,
   ].filter(Boolean);
 
   if (enabledModes.length > 1) {

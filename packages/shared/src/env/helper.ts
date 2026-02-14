@@ -26,7 +26,7 @@ export const maskConfig = (config: IModelConfig) => {
   return Object.fromEntries(
     Object.entries(config).map(([key, value]) => {
       if (['openaiApiKey', 'azureOpenaiKey', 'anthropicApiKey'].includes(key)) {
-        return [key, maskKey(value)];
+        return [key, maskKey(value as string)];
       } else if (['openaiExtraConfig', 'azureExtraConfig'].includes(key)) {
         return [key, maskKey(JSON.stringify(value))];
       }

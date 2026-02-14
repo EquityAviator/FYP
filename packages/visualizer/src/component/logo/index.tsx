@@ -1,7 +1,8 @@
 import './index.less';
 
+// Dark Pattern Hunter Logo - using extension icon
 export const LogoUrl =
-  'https://lf3-static.bytednsdoc.com/obj/eden-cn/vhaeh7vhabf/Midscene.png';
+  'chrome-extension://__MSG_@@extension_id__/icon128.png';
 
 export const Logo = ({ hideLogo = false }: { hideLogo?: boolean }) => {
   if (hideLogo) {
@@ -11,8 +12,8 @@ export const Logo = ({ hideLogo = false }: { hideLogo?: boolean }) => {
   return (
     <div className="logo">
       <img
-        alt="Pattern Hunter Logo"
-        src="https://lf3-static.bytednsdoc.com/obj/eden-cn/vhaeh7vhabf/Midscene.png"
+        alt="Dark Pattern Hunter Logo"
+        src={LogoUrl}
       />
     </div>
   );

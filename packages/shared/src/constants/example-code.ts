@@ -1,6 +1,6 @@
 export const PLAYWRIGHT_EXAMPLE_CODE = `
-// Reference the following code to generate Midscene test cases
-// The following is test code for Midscene AI, for reference
+// Reference the following code to generate Dark Pattern Hunter test cases
+// The following is test code for Dark Pattern Hunter AI, for reference
 // The following is Playwright syntax, you can use Playwright to assist in test generation
 IMPORTANT: Follow these exact type signatures for AI functions:
 
@@ -17,8 +17,8 @@ aiAssert(assertion: string): Promise<void>
 aiQuery<T>(queryObject: Record<string, string>): Promise<T> // Extracts data from page based on descriptions
 
 // examples:
-// Reference the following code to generate Midscene test cases
-// The following is test code for Midscene AI, for reference
+// Reference the following code to generate Dark Pattern Hunter test cases
+// The following is test code for Dark Pattern Hunter AI, for reference
 // The following is Playwright syntax, you can use Playwright to assist in test generation
 import { test as base } from '@playwright/test';
 import type { PlayWrightAiFixtureType } from '@darkpatternhunter/web/playwright';
@@ -128,33 +128,33 @@ tasks:
       # Tap an element described by a prompt.
       - aiTap: <prompt>
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Double click an element described by a prompt.
       - aiDoubleClick: <prompt>
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Hover over an element described by a prompt.
       - aiHover: <prompt>
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Input text into an element described by a prompt.
       - aiInput: <final text content of the input>
         locate: <prompt>
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Press a key (e.g., Enter, Tab, Escape) on an element described by a prompt.
       - aiKeyboardPress: <key>
         locate: <prompt>
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Scroll globally or on an element described by a prompt.
@@ -164,7 +164,7 @@ tasks:
         distance: <number> # Optional, the scroll distance in pixels.
         locate: <prompt> # Optional, the element to scroll on.
         deepThink: <boolean> # Optional, whether to use deepThink to precisely locate the element. Defaults to False.
-        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Midscene will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
+        xpath: <xpath> # Optional, the xpath of the target element for the operation. If provided, Dark Pattern Hunter will prioritize this xpath to find the element before using the cache and the AI model. Defaults to empty.
         cacheable: <boolean> # Optional, whether to cache the result of this API call when the [caching feature](./caching.mdx) is enabled. Defaults to True.
 
       # Log the current screenshot with a description in the report file.

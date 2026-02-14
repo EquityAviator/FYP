@@ -1,29 +1,29 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-// do not import getBasicEnvValue and MIDSCENE_RUN_DIR directly from ./env,
+// do not import getBasicEnvValue and DPH_RUN_DIR directly from ./env,
 // because it will cause circular dependency
 import { getBasicEnvValue } from './env/basic';
-import { MIDSCENE_RUN_DIR } from './env/types';
+import { DPH_RUN_DIR } from './env/types';
 import { ifInNode } from './utils';
 
-export const defaultRunDirName = 'midscene_run';
+export const defaultRunDirName = 'dph_run';
 // Define locally for now to avoid import issues
 
-export const getMidsceneRunDir = () => {
+export const getDPHRunDir = () => {
   if (!ifInNode) {
     return '';
   }
 
-  return getBasicEnvValue(MIDSCENE_RUN_DIR) || defaultRunDirName;
+  return getBasicEnvValue(DPH_RUN_DIR) || defaultRunDirName;
 };
 
-export const getMidsceneRunBaseDir = () => {
+export const getDPHRunBaseDir = () => {
   if (!ifInNode) {
     return '';
   }
 
-  let basePath = path.resolve(process.cwd(), getMidsceneRunDir());
+  let basePath = path.resolve(process.cwd(), getDPHRunDir());
 
   // Create a base directory
   if (!existsSync(basePath)) {
@@ -40,13 +40,13 @@ export const getMidsceneRunBaseDir = () => {
 };
 
 /**
- * Get the path to the midscene_run directory or a subdirectory within it.
+ * Get the path to the dph_run directory or a subdirectory within it.
  * Creates the directory if it doesn't exist.
  *
  * @param subdir - Optional subdirectory name (e.g., 'log', 'report')
  * @returns The absolute path to the requested directory
  */
-export const getMidsceneRunSubDir = (
+export const getDPHRunSubDir = (
   subdir: 'dump' | 'cache' | 'report' | 'tmp' | 'log' | 'output',
 ): string => {
   if (!ifInNode) {
@@ -54,7 +54,7 @@ export const getMidsceneRunSubDir = (
   }
 
   // Create a log directory
-  const basePath = getMidsceneRunBaseDir();
+  const basePath = getDPHRunBaseDir();
   const logPath = path.join(basePath, subdir);
   if (!existsSync(logPath)) {
     mkdirSync(logPath, { recursive: true });
@@ -62,6 +62,11 @@ export const getMidsceneRunSubDir = (
 
   return logPath;
 };
+
+// Legacy aliases for backward compatibility
+export const getMidsceneRunDir = getDPHRunDir;
+export const getMidsceneRunBaseDir = getDPHRunBaseDir;
+export const getMidsceneRunSubDir = getDPHRunSubDir;
 
 export const ERROR_CODE_NOT_IMPLEMENTED_AS_DESIGNED =
   'NOT_IMPLEMENTED_AS_DESIGNED';

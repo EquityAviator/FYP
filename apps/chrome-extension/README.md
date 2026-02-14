@@ -1,6 +1,6 @@
-# Midscene Chrome DevTools
+# Dark Pattern Hunter Chrome DevTools
 
-Chrome extension version of the Midscene tool, providing browser automation, Bridge mode, and a Playground testing environment.
+Chrome extension version of the Dark Pattern Hunter tool, providing AI-powered dark pattern detection, browser automation, Bridge mode, and a Playground testing environment.
 
 ## Development Guide
 
@@ -14,7 +14,7 @@ Make sure you have completed the basic environment setup according to the main p
 chrome-extension/
 ├── dist/                 # Build output directory, can be directly installed as a Chrome extension
 ├── extension/            # Packaged Chrome extension
-│   └── midscene-extension-v{version}.zip    # Compressed extension
+│   └── dark-pattern-hunter-extension-v{version}.zip    # Compressed extension
 ├── scripts/              # Build and utility scripts
 │   └── pack-extension.js          # Package Chrome extension
 ├── src/                  # Source code
@@ -85,40 +85,48 @@ This method is suitable for quick testing during development.
 
 For publishing or sharing:
 1. Use the `pnpm run build` command to build the project
-2. Find the `midscene-extension-v{version}.zip` file in the `extension` directory
+2. Find the `dark-pattern-hunter-extension-v{version}.zip` file in the `extension` directory
 3. Upload this file to the Chrome Web Store developer console, or share it with others for installation
 
 ### Debugging Tips
 
 #### Debugging the Extension Background
 
-1. Find the Midscene extension on the Chrome extensions page (`chrome://extensions/`)
+1. Find the Dark Pattern Hunter extension on the Chrome extensions page (`chrome://extensions/`)
 2. Click the "view: background page" link to open the developer tools
 3. Use the console and network panels for debugging
 
 #### Debugging the Popup Window
 
-1. Click the Midscene icon in the Chrome toolbar to open the extension popup
+1. Click the Dark Pattern Hunter icon in the Chrome toolbar to open the extension popup
 2. Right-click on the popup and select "Inspect"
 3. Use the developer tools to debug UI and interactions
 
 #### Debugging Content Scripts
 
-1. Open any webpage, click the Midscene icon to activate the extension
+1. Open any webpage, click the Dark Pattern Hunter icon to activate the extension
 2. Open the developer tools
-3. Find the Midscene scripts in the "Content scripts" section under the "Sources" panel
+3. Find the Dark Pattern Hunter scripts in the "Content scripts" section under the "Sources" panel
 
 ### Feature Description
 
+#### Live Guard (Dark Pattern Detection)
+
+Live Guard is the core feature that scans web pages for dark patterns in real-time. It uses AI models to analyze UI elements and detect deceptive design patterns.
+
 #### Bridge Mode
 
-Bridge mode allows controlling the browser from a local terminal via the Midscene SDK. This is useful for operating the browser through both scripts and manual interaction, or for reusing cookies.
+Bridge mode allows controlling the browser from a local terminal via the Dark Pattern Hunter SDK. This is useful for operating the browser through both scripts and manual interaction, or for reusing cookies.
+
+#### Dataset Collection
+
+The dataset collection feature allows users to capture and annotate UI elements for training and research purposes.
 
 ## Release Process
 
 1. Update the version number in `package.json` to match the main project
 2. Run the build: `pnpm run build`
-3. Verify the `midscene-extension-v{version}.zip` file generated in the `extension` directory
+3. Verify the `dark-pattern-hunter-extension-v{version}.zip` file generated in the `extension` directory
 4. Submit the ZIP file to the Chrome Web Store
 
 ## Troubleshooting

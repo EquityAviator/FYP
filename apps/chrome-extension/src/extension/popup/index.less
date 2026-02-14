@@ -129,7 +129,7 @@ html {
   .popup-content {
     flex: 1;
     padding: 0px 16px 0px 16px;
-    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 
@@ -152,6 +152,33 @@ html {
       &::-webkit-scrollbar-thumb {
         background: #c1c1c1;
         border-radius: 4px;
+
+        &:hover {
+          background: #a8a8a8;
+        }
+      }
+    }
+
+    /* Settings module specific scrolling */
+    .settings-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 16px;
+      min-height: 0;
+
+      /* Custom scrollbar styling */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
 
         &:hover {
           background: #a8a8a8;

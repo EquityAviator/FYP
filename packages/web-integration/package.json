@@ -1,16 +1,17 @@
 {
   "name": "@darkpatternhunter/web",
-  "description": "Automate browser actions, extract data, and perform assertions using AI. It offers JavaScript SDK, Chrome extension, and support for scripting in YAML. See https://midscenejs.com/ for details.",
+  "description": "AI-powered dark pattern detection for web browsers. JavaScript SDK, Chrome extension, and YAML scripting support.",
   "keywords": [
     "AI UI automation",
     "AI testing",
     "Computer use",
     "Browser use",
-    "Android use"
+    "Android use",
+    "Dark pattern detection"
   ],
-  "version": "0.30.8",
-  "repository": "https://github.com/web-infra-dev/midscene",
-  "homepage": "https://midscenejs.com/",
+  "version": "1.0.0",
+  "repository": "https://github.com/darkpatternhunter/dark-pattern-hunter",
+  "homepage": "https://darkpatternhunter.dev/",
   "main": "./dist/lib/index.js",
   "types": "./dist/types/index.d.ts",
   "module": "./dist/es/index.mjs",
@@ -95,22 +96,22 @@
   },
   "scripts": {
     "dev": "npm run build && npx npm-watch",
-    "dev:server": "npm run build && ./bin/midscene-playground",
+    "dev:server": "npm run build && ./bin/dph-playground",
     "build": "rslib build",
     "build:watch": "rslib build --watch",
-    "playground": "DEBUG=midscene:* tsx demo/playground.ts",
+    "playground": "DEBUG=dph:* tsx demo/playground.ts",
     "test": "vitest --run",
     "test:u": "vitest --run -u",
     "test:ai": "AI_TEST_TYPE=web npm run test",
-    "test:ai:cache": "MIDSCENE_CACHE=true npm run test:ai",
+    "test:ai:cache": "DPH_CACHE=true npm run test:ai",
     "e2e": "playwright test --config=tests/playwright.config.ts",
-    "e2e:report": "MIDSCENE_REPORT=true playwright test --config=tests/playwright.config.ts",
-    "e2e:cache": "MIDSCENE_CACHE=true playwright test --config=tests/playwright.config.ts",
+    "e2e:report": "DPH_REPORT=true playwright test --config=tests/playwright.config.ts",
+    "e2e:cache": "DPH_CACHE=true playwright test --config=tests/playwright.config.ts",
     "e2e:ui": "playwright test --config=tests/playwright.config.ts --ui",
-    "e2e:ui:cache": "MIDSCENE_CACHE=true playwright test --config=tests/playwright.config.ts --ui"
+    "e2e:ui:cache": "DPH_CACHE=true playwright test --config=tests/playwright.config.ts --ui"
   },
   "bin": {
-    "midscene-playground": "./bin/midscene-playground"
+    "dph-playground": "./bin/dph-playground"
   },
   "files": ["static", "dist", "iife-script", "README.md", "bin"],
   "dependencies": {

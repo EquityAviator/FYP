@@ -1,7 +1,7 @@
 {
-  "name": "midscene",
+  "name": "dark-pattern-hunter",
   "private": true,
-  "version": "0.30.8",
+  "version": "1.0.0",
   "scripts": {
     "dev": "nx run-many --target=build:watch --exclude=chrome-extension --verbose --parallel=6",
     "build": "nx run-many --target=build --verbose",

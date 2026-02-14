@@ -1,7 +1,7 @@
 {
-  "name": "Pattern Hunter",
-  "description": "AI-powered browser extension to detect dark patterns and deceptive UI elements using UI-TARS model.",
-  "version": "0.140",
+  "name": "Dark Pattern Hunter",
+  "description": "AI-powered browser extension to detect dark patterns and deceptive UI elements using visual AI models.",
+  "version": "1.0.0",
   "manifest_version": 3,
   "permissions": [
     "activeTab",
@@ -36,7 +36,7 @@
   ],
   "action": {
     "default_icon": "icon128.png",
-    "default_title": "Pattern Hunter"
+    "default_title": "Dark Pattern Hunter"
   },
   "side_panel": {
     "default_path": "index.html"
