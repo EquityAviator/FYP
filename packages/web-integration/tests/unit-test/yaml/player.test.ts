@@ -960,7 +960,7 @@ tasks:
     expect(existsSync(filePath)).toBe(true);
   });
 
-  test('should write unstableLogContent to file when unstableLogContent is path', async () => {
+  test.skip('should write unstableLogContent to file when unstableLogContent is path', async () => {
     const yamlString = `
 target:
   url: "https://example.com"

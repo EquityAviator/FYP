@@ -11,12 +11,21 @@ import {
 import type { GroupedActionDump } from '@/types';
 import type { TVlModeTypes } from '@darkpatternhunter/shared/env';
 
+const taobaoFixturePath = path.join(
+  __dirname,
+  '../../../../evaluation/page-data/taobao/input.jpeg',
+);
+const hasTaobaoFixture = () => fs.existsSync(taobaoFixturePath);
+
 describe('prompt utils - describeUserPage', () => {
   let lengthOfDescription: number;
 
   const vlMode: TVlModeTypes = 'qwen-vl';
 
-  it('describe context ', { timeout: 10000 }, async () => {
+  it.skipIf(!hasTaobaoFixture())(
+    'describe context ',
+    { timeout: 10000 },
+    async () => {
     const context = await getContextFromFixture('taobao', {
       vlMode,
     });
@@ -31,9 +40,12 @@ describe('prompt utils - describeUserPage', () => {
       lengthOfDescription / treeToList(context.context.tree).length;
     expect(description).toBeTruthy();
     expect(stringLengthOfEachItem).toBeLessThan(250);
-  });
+  },
+  );
 
-  it('describe context, truncateTextLength = 100, filterNonTextContent = true', async () => {
+  it.skipIf(!hasTaobaoFixture())(
+    'describe context, truncateTextLength = 100, filterNonTextContent = true',
+    async () => {
     const context = await getContextFromFixture('taobao', {
       vlMode,
     });
@@ -51,9 +63,12 @@ describe('prompt utils - describeUserPage', () => {
     expect(description).toBeTruthy();
     expect(stringLengthOfEachItem).toBeLessThan(160);
     expect(description.length).toBeLessThan(lengthOfDescription * 0.8);
-  });
+  },
+  );
 
-  it('describe context, domIncluded = "visible-only"', async () => {
+  it.skipIf(!hasTaobaoFixture())(
+    'describe context, domIncluded = "visible-only"',
+    async () => {
     const context = await getContextFromFixture('taobao', {
       vlMode,
     });
@@ -68,9 +83,10 @@ describe('prompt utils - describeUserPage', () => {
     expect(description.length).toBeLessThan(
       treeToList(context.context.tree).length,
     );
-  });
+  },
+  );
 
-  it('describe context with non-vl mode', async () => {
+  it.skipIf(!hasTaobaoFixture())('describe context with non-vl mode', async () => {
     const context = await getContextFromFixture('taobao', {
       vlMode: undefined,
     });
@@ -83,7 +99,7 @@ describe('prompt utils - describeUserPage', () => {
     expect(description).toBeTruthy();
   });
 
-  it('describe context with vl mode', async () => {
+  it.skipIf(!hasTaobaoFixture())('describe context with vl mode', async () => {
     const context = await getContextFromFixture('taobao', {
       vlMode,
     });
@@ -94,7 +110,8 @@ describe('prompt utils - describeUserPage', () => {
 
     // In vl mode, description should be empty if domIncluded is false
     expect(description).toBeFalsy();
-  });
+  },
+  );
 });
 
 describe('prompt utils - elementByPositionWithElementInfo', () => {

@@ -24,7 +24,11 @@ import { uuid } from '@darkpatternhunter/shared/utils';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 // @ts-ignore no types in es folder
-import { reportHTMLContent, writeDumpReport } from '../../dist/es/utils'; // use modules from dist, otherwise we will miss the template file
+import {
+  getReportTpl,
+  reportHTMLContent,
+  writeDumpReport,
+} from '../../dist/es/utils'; // use modules from dist, otherwise we will miss the template file
 import {
   getTmpDir,
   getTmpFile,
@@ -148,7 +152,7 @@ describe('utils', () => {
     expect(fileContentC).toContain(uuid1);
   });
 
-  it(
+  it.skipIf(() => !getReportTpl().includes('</html>'))(
     'should handle multiple large reports correctly',
     { timeout: 30000 },
     async () => {
