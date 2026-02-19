@@ -30,7 +30,8 @@ interface BridgeMessageItem {
   time: string;
 }
 
-const AUTO_CONNECT_STORAGE_KEY = 'midscene-bridge-auto-connect';
+// Dark Pattern Hunter branding
+const AUTO_CONNECT_STORAGE_KEY = 'dph-bridge-auto-connect';
 
 export default function Bridge() {
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>('closed');

@@ -1,6 +1,12 @@
 /**
  * Live Guard Module
  * Real-time dark pattern detection and consumer protection for active tab
+ * 
+ * Features:
+ * - Full-page capture with scroll-and-stitch strategy
+ * - Complete DOM extraction with element selectors
+ * - DOM-anchored highlighting for precise pattern location
+ * - Automatic image resizing for local AI models
  */
 
 import { ClearOutlined, SafetyOutlined } from '@ant-design/icons';
@@ -21,6 +27,14 @@ import {
   isLocalServerReachable,
 } from '../../utils/aiConfig';
 import { getDarkPatternPrompt } from '../../utils/analysisEngine';
+import {
+  captureFullPage,
+  type FullPageCaptureResult,
+} from '../../utils/fullPageCapture';
+import {
+  resizeImageForLocalModel,
+  needsResizeForModel,
+} from '../../utils/imageResize';
 
 const { Title, Text, Paragraph } = Typography;
 const debug = getDebug('live-guard');
@@ -33,7 +47,7 @@ const LIVE_GUARD_MESSAGES = {
   FOCUS_PATTERN: 'live-guard-focus-pattern',
 } as const;
 
-// Dark pattern detection result interface
+// Dark pattern detection result interface with DOM anchoring
 interface DetectedPattern {
   type: string;
   description: string;
@@ -42,6 +56,10 @@ interface DetectedPattern {
   evidence: string;
   confidence: number;
   bbox?: [number, number, number, number];
+  // DOM anchoring fields for precise highlighting
+  selector?: string; // CSS selector or XPath
+  backendNodeId?: number; // Chrome DevTools Protocol node ID
+  elementText?: string; // Text content for fallback matching
   counterMeasure: string;
 }
 
@@ -70,7 +88,8 @@ export function LiveGuard() {
   } = useGlobalAIConfig();
 
   /**
-   * Capture current tab screenshot and DOM
+   * Capture full page screenshot and complete DOM with element selectors
+   * Uses scroll-and-stitch strategy for full-page capture
    */
   const capturePageData = async (): Promise<{
     screenshot: string;
@@ -78,6 +97,8 @@ export function LiveGuard() {
     url: string;
     title: string;
     screenshotSize: { width: number; height: number };
+    totalHeight: number;
+    isFullPage: boolean;
   } | null> => {
     try {
       // Get current tab
@@ -89,55 +110,44 @@ export function LiveGuard() {
         throw new Error('No active tab found');
       }
 
-      // Capture screenshot
-      const screenshot = await new Promise<string>((resolve, reject) => {
-        chrome.tabs.captureVisibleTab(
-          tab.windowId,
-          { format: 'png' },
-          (dataUrl) => {
-            if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message));
-            } else {
-              resolve(dataUrl);
-            }
-          },
-        );
+      debug('Starting full-page capture for tab:', tab.id);
+
+      // Use full-page capture with scroll-and-stitch
+      const captureResult = await captureFullPage(tab.id, tab.windowId!, {
+        maxSegments: 30,
+        segmentHeight: 1200,
+        overlap: 100,
+        waitTime: 400,
       });
 
-      // Get screenshot dimensions
-      const img = new Image();
-      const imgPromise = new Promise<{ width: number; height: number }>(
-        (resolve, reject) => {
-          img.onload = () => {
-            resolve({ width: img.width, height: img.height });
-          };
-          img.onerror = () => reject(new Error('Failed to load screenshot'));
-          img.src = screenshot;
-        },
-      );
-      const screenshotSize = await imgPromise;
-
-      // Get DOM and page info
-      const result = await chrome.scripting.executeScript({
+      // Get page info
+      const pageInfoResult = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => {
           return {
             url: window.location.href,
             title: document.title,
-            dom: document.documentElement.outerHTML.substring(0, 5000), // Limit DOM size
           };
         },
       });
 
-      if (result?.[0]?.result) {
-        return {
-          screenshot,
-          screenshotSize,
-          ...result[0].result,
-        };
-      }
+      const pageInfo = pageInfoResult?.[0]?.result;
 
-      return null;
+      debug('Full-page capture complete:', {
+        segments: captureResult.segments,
+        totalHeight: captureResult.totalHeight,
+        domLength: captureResult.dom.length,
+      });
+
+      return {
+        screenshot: captureResult.screenshot,
+        dom: captureResult.dom,
+        url: pageInfo?.url || tab.url || '',
+        title: pageInfo?.title || tab.title || '',
+        screenshotSize: captureResult.viewport,
+        totalHeight: captureResult.totalHeight,
+        isFullPage: captureResult.segments > 1,
+      };
     } catch (err) {
       debug('Failed to capture page data:', err);
       return null;
@@ -145,7 +155,7 @@ export function LiveGuard() {
   };
 
   /**
-   * Analyze current page using AI
+   * Analyze current page using AI with full-page capture and DOM anchoring
    */
   const analyzeCurrentPage = async () => {
     setIsScanning(true);
@@ -169,11 +179,45 @@ export function LiveGuard() {
       debug('Analyzing page:', pageData.url);
       debug('Using provider:', currentConfig.provider);
       debug('Using model:', currentConfig.selectedModel);
+      debug('Full-page capture:', pageData.isFullPage ? 'Yes' : 'No', 'Height:', pageData.totalHeight);
 
       // Get active model config
       const modelConfig = await getActiveModelConfig();
 
-      // Prepare AI messages
+      // Resize image for local models if needed
+      let screenshotToSend = pageData.screenshot;
+      let actualScreenshotSize = { ...pageData.screenshotSize };
+      
+      if (currentConfig.provider === 'local' && currentConfig.selectedModel) {
+        const modelName = currentConfig.selectedModel;
+        
+        // Check if resize is needed
+        if (needsResizeForModel(
+          pageData.screenshotSize.width,
+          pageData.screenshotSize.height,
+          modelName
+        )) {
+          debug('Resizing image for local model:', modelName);
+          
+          const resizeResult = await resizeImageForLocalModel(
+            pageData.screenshot,
+            modelName
+          );
+          
+          screenshotToSend = resizeResult.image;
+          actualScreenshotSize = resizeResult.resizedSize;
+          
+          debug(`Image resized: ${resizeResult.originalSize.width}x${resizeResult.originalSize.height} -> ${resizeResult.resizedSize.width}x${resizeResult.resizedSize.height}`);
+        } else {
+          debug('Image size OK for model, no resize needed');
+        }
+      }
+
+      // Calculate scale factor for coordinate mapping
+      const scaleX = actualScreenshotSize.width / pageData.screenshotSize.width;
+      const scaleY = actualScreenshotSize.height / pageData.screenshotSize.height;
+
+      // Prepare AI messages with full DOM and request for DOM selectors
       const messages: ChatCompletionMessageParam[] = [
         {
           role: 'system',
@@ -184,44 +228,52 @@ export function LiveGuard() {
           content: [
             {
               type: 'text',
-              text: `Analyze this webpage for dark patterns in real-time.
+              text: `Analyze this webpage for dark patterns. This is a FULL-PAGE capture.
 
 URL: ${pageData.url}
 Page Title: ${pageData.title}
+Page Height: ${pageData.totalHeight}px
+Viewport: ${pageData.screenshotSize.width}x${pageData.screenshotSize.height}
+Image Size: ${actualScreenshotSize.width}x${actualScreenshotSize.height}
 
-This is a live scan for consumer protection. Focus on patterns that:
+FOCUS ON:
 1. Create urgency or scarcity (fake timers, countdowns)
 2. Hide important information (small print, hidden costs)
 3. Make it difficult to opt-out or cancel
 4. Use deceptive design to manipulate user choices
 
-For each detected pattern, provide a counterMeasure field with actionable advice for user.
+CRITICAL: For each detected pattern, you MUST provide:
+1. "bbox": [x, y, width, height] in PIXELS relative to the IMAGE provided
+2. "selector": A CSS selector that uniquely identifies the element (e.g., "#timer", ".countdown", "button.urgent")
+3. "elementText": The exact text content of the element for fallback matching
 
-IMPORTANT: Return a JSON object with the following structure:
+Return JSON:
 {
   "patterns": [
     {
-      "type": "Pattern Type (e.g., 'Pressured Selling / FOMO / Urgency')",
-      "description": "Brief description of pattern",
+      "type": "Pattern Type",
+      "description": "Brief description",
       "severity": "low|medium|high|critical",
-      "location": "Where on the page this pattern appears",
+      "location": "Where on page",
       "evidence": "What makes this a dark pattern",
       "confidence": 0.0-1.0,
-      "bbox": [x, y, width, height], // Bounding box coordinates in pixels
-      "counterMeasure": "Short, actionable advice for user (English/Urdu)"
+      "bbox": [x, y, width, height],
+      "selector": "#unique-selector",
+      "elementText": "Exact text content",
+      "counterMeasure": "Actionable advice"
     }
   ],
   "summary": {
     "total_patterns": number,
     "prevalence_score": 0.0-1.0,
-    "primary_categories": ["category1", "category2"]
+    "primary_categories": ["category1"]
   }
 }`,
             },
             {
               type: 'image_url',
               image_url: {
-                url: pageData.screenshot,
+                url: screenshotToSend,
               },
             },
           ],
@@ -236,8 +288,26 @@ IMPORTANT: Return a JSON object with the following structure:
           modelConfig,
         );
 
+      // Scale bbox coordinates back to original page size if image was resized
+      const patternsWithScaledCoords = response.content.patterns.map(
+        (pattern) => {
+          if (pattern.bbox && (scaleX !== 1 || scaleY !== 1)) {
+            return {
+              ...pattern,
+              bbox: [
+                Math.round(pattern.bbox[0] / scaleX),
+                Math.round(pattern.bbox[1] / scaleY),
+                Math.round(pattern.bbox[2] / scaleX),
+                Math.round(pattern.bbox[3] / scaleY),
+              ] as [number, number, number, number],
+            };
+          }
+          return pattern;
+        },
+      );
+
       // Add counter-measures to patterns if not provided
-      const patternsWithCounterMeasures = response.content.patterns.map(
+      const patternsWithCounterMeasures = patternsWithScaledCoords.map(
         (pattern) => ({
           ...pattern,
           counterMeasure:
@@ -247,7 +317,7 @@ IMPORTANT: Return a JSON object with the following structure:
 
       setDetectedPatterns(patternsWithCounterMeasures);
 
-      // Send highlights to content script with screenshot size
+      // Send highlights to content script with full-page metadata
       const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
@@ -257,7 +327,9 @@ IMPORTANT: Return a JSON object with the following structure:
           action: LIVE_GUARD_MESSAGES.SHOW_HIGHLIGHTS,
           patterns: patternsWithCounterMeasures,
           screenshotSize: pageData.screenshotSize,
-          isNormalized: true, // AI returns normalized coordinates (0-1000)
+          totalHeight: pageData.totalHeight,
+          isFullPage: pageData.isFullPage,
+          isNormalized: false, // AI returns pixel coordinates for full-page
         });
       }
 

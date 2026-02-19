@@ -41,20 +41,24 @@ html {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;
     
     /* Ensure UniversalPlayground takes full height */
     .playground-container {
       height: 100%;
       min-height: 0;
+      overflow: hidden;
       
       /* Ensure the middle dialog area can scroll properly */
       .middle-dialog-area {
         min-height: 0;
+        overflow: hidden;
         
         .info-list-container {
           /* Ensure smooth scrolling and stable scrollbar */
           scroll-behavior: smooth;
           scrollbar-gutter: stable;
+          overflow-y: auto;
         }
       }
       
@@ -78,6 +82,7 @@ html {
     padding: 12px 16px;
     border-bottom: 1px solid #f0f0f0;
     background: #ffffff;
+    flex-shrink: 0; /* Prevent nav from shrinking */
 
     .nav-left {
       display: flex;
@@ -125,18 +130,21 @@ html {
     }
   }
 
-  /* main content area */
+  /* main content area - FIXED SCROLLING */
   .popup-content {
     flex: 1;
     padding: 0px 16px 0px 16px;
-    overflow-y: auto;
+    overflow: hidden; /* Changed from overflow-y: auto */
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Critical for flex children to respect overflow */
 
-    /* Module container scrolling rules */
+    /* Module container scrolling rules - FIXED */
     .module-container {
-      max-height: 85vh;
+      flex: 1;
+      min-height: 0; /* Critical for proper scrolling */
       overflow-y: auto;
+      overflow-x: hidden;
       padding-right: 8px;
 
       /* Custom scrollbar styling */
@@ -163,6 +171,7 @@ html {
     .settings-container {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       padding-bottom: 16px;
       min-height: 0;
 

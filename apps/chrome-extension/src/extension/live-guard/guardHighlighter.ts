@@ -1,6 +1,12 @@
 /**
  * Live Guard Content Script
  * Handles highlighting of detected dark patterns on the page using Shadow DOM
+ * 
+ * Features:
+ * - DOM-anchored highlighting using CSS selectors
+ * - Fallback to coordinate-based positioning
+ * - Full-page screenshot support
+ * - Precise element snapping using getBoundingClientRect()
  */
 
 import { getDebug } from '@darkpatternhunter/shared/logger';
@@ -26,7 +32,7 @@ const LIVE_GUARD_MESSAGES = {
   FOCUS_PATTERN: 'live-guard-focus-pattern',
 } as const;
 
-// Dark pattern detection result interface
+// Dark pattern detection result interface with DOM anchoring
 interface DetectedPattern {
   type: string;
   description: string;
@@ -35,6 +41,9 @@ interface DetectedPattern {
   evidence: string;
   confidence: number;
   bbox?: [number, number, number, number];
+  // DOM anchoring fields
+  selector?: string; // CSS selector for precise element targeting
+  elementText?: string; // Text content for fallback matching
   counterMeasure: string;
 }
 
@@ -42,6 +51,8 @@ interface DetectedPattern {
 interface PatternWithMetadata extends DetectedPattern {
   screenshotSize?: ScreenshotSize;
   isNormalized?: boolean;
+  totalHeight?: number;
+  isFullPage?: boolean;
 }
 
 // Store current highlights
@@ -49,6 +60,7 @@ let currentHighlights: HTMLElement[] = [];
 let shadowHost: HTMLElement | null = null;
 let shadowRoot: ShadowRoot | null = null;
 let currentScreenshotSize: ScreenshotSize | null = null;
+let currentPatterns: DetectedPattern[] = []; // Store patterns for hover sync
 
 /**
  * Initialize Shadow DOM for highlights
@@ -229,8 +241,83 @@ function getSeverityColor(severity: string): { bg: string; border: string } {
 }
 
 /**
+ * Find DOM element using selector or text content
+ * Priority: selector > elementText > bbox coordinates
+ */
+function findDomElement(pattern: PatternWithMetadata): Element | null {
+  // Priority 1: Use CSS selector if provided
+  if (pattern.selector) {
+    try {
+      const element = document.querySelector(pattern.selector);
+      if (element) {
+        debug('Found element by selector:', pattern.selector);
+        return element;
+      }
+    } catch (e) {
+      debug('Invalid selector:', pattern.selector, e);
+    }
+  }
+
+  // Priority 2: Find by text content
+  if (pattern.elementText) {
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+    );
+    
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text | null)) {
+      if (node.textContent?.includes(pattern.elementText)) {
+        const element = node.parentElement;
+        if (element) {
+          debug('Found element by text:', pattern.elementText);
+          return element;
+        }
+      }
+    }
+  }
+
+  // Priority 3: Find by bbox center point
+  if (pattern.bbox && currentScreenshotSize) {
+    const bbox: BBox = {
+      x: pattern.bbox[0],
+      y: pattern.bbox[1],
+      width: pattern.bbox[2],
+      height: pattern.bbox[3],
+    };
+
+    if (isValidBbox(bbox)) {
+      // Calculate center point
+      const centerX = pattern.isNormalized !== false
+        ? (bbox.x + bbox.width / 2) / 1000 * currentScreenshotSize.width
+        : bbox.x + bbox.width / 2;
+      const centerY = pattern.isNormalized !== false
+        ? (bbox.y + bbox.height / 2) / 1000 * currentScreenshotSize.height
+        : bbox.y + bbox.height / 2;
+
+      // Adjust for viewport
+      const viewportHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+      
+      // Convert to viewport coordinates
+      const viewportX = centerX;
+      const viewportY = centerY - scrollY;
+
+      const element = document.elementFromPoint(viewportX, viewportY);
+      if (element) {
+        debug('Found element by bbox center point');
+        return element;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Create a highlight overlay for a detected pattern
- * Uses high-precision coordinate mapping to snap to actual DOM elements
+ * Uses DOM-anchored highlighting with precise element snapping
  */
 function createHighlightOverlay(
   pattern: PatternWithMetadata,
@@ -251,8 +338,29 @@ function createHighlightOverlay(
     box-shadow: 0 0 10px ${colors.bg};
   `;
 
-  // If bbox is provided, use high-precision coordinate mapping
-  if (pattern.bbox && currentScreenshotSize) {
+  // Try to find the DOM element using selector, text, or bbox
+  const targetElement = findDomElement(pattern);
+
+  if (targetElement) {
+    // Use getBoundingClientRect for precise element positioning
+    const rect = targetElement.getBoundingClientRect();
+    const scrollX = window.scrollX || document.documentElement.scrollLeft;
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+    // Position overlay exactly around the element
+    overlay.style.position = 'absolute';
+    overlay.style.left = `${rect.left + scrollX}px`;
+    overlay.style.top = `${rect.top + scrollY}px`;
+    overlay.style.width = `${rect.width}px`;
+    overlay.style.height = `${rect.height}px`;
+
+    debug('DOM-anchored highlight:', {
+      selector: pattern.selector,
+      element: targetElement.tagName,
+      rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+    });
+  } else if (pattern.bbox && currentScreenshotSize) {
+    // Fallback to coordinate-based positioning
     const bbox: BBox = {
       x: pattern.bbox[0],
       y: pattern.bbox[1],
@@ -260,10 +368,8 @@ function createHighlightOverlay(
       height: pattern.bbox[3],
     };
 
-    // Validate bbox
     if (!isValidBbox(bbox)) {
       debug('Invalid bbox, skipping highlight:', bbox);
-      // Default full-page overlay if invalid bbox
       overlay.style.left = '0';
       overlay.style.top = '0';
       overlay.style.width = '100%';
@@ -274,45 +380,30 @@ function createHighlightOverlay(
       const scrollPosition = getScrollPosition();
       const dpr = getDevicePixelRatio();
 
-      // Map bbox to DOM coordinates with high precision
+      // Map bbox to DOM coordinates
       const result = getCanvasToDomCoords(
         bbox,
         currentScreenshotSize,
         viewportSize,
         scrollPosition,
         dpr,
-        pattern.isNormalized !== false, // Default to true if not specified
+        pattern.isNormalized !== false,
       );
 
-      // If we found an element, use its bounding rect for perfect snap-to-element highlight
-      if (result.element && result.elementRect) {
-        const elementRect = result.elementRect;
-        overlay.style.left = `${elementRect.left + scrollPosition.scrollX}px`;
-        overlay.style.top = `${elementRect.top + scrollPosition.scrollY}px`;
-        overlay.style.width = `${elementRect.width}px`;
-        overlay.style.height = `${elementRect.height}px`;
+      overlay.style.left = `${result.domX}px`;
+      overlay.style.top = `${result.domY}px`;
+      overlay.style.width = `${result.domWidth}px`;
+      overlay.style.height = `${result.domHeight}px`;
 
-        debug('Snapped highlight to element:', {
-          element: result.element.tagName,
-          rect: elementRect,
-        });
-      } else {
-        // Use mapped coordinates if no element found
-        overlay.style.left = `${result.domX}px`;
-        overlay.style.top = `${result.domY}px`;
-        overlay.style.width = `${result.domWidth}px`;
-        overlay.style.height = `${result.domHeight}px`;
-
-        debug('Using mapped coordinates (no element found):', {
-          domX: result.domX,
-          domY: result.domY,
-          domWidth: result.domWidth,
-          domHeight: result.domHeight,
-        });
-      }
+      debug('Coordinate-based highlight:', {
+        domX: result.domX,
+        domY: result.domY,
+        domWidth: result.domWidth,
+        domHeight: result.domHeight,
+      });
     }
   } else {
-    // Default full-page overlay if no bbox or screenshot size
+    // Default full-page overlay if no positioning info
     overlay.style.left = '0';
     overlay.style.top = '0';
     overlay.style.width = '100%';
@@ -387,13 +478,20 @@ function hideTooltip(): void {
  * @param patterns - Array of detected patterns
  * @param screenshotSize - Screenshot dimensions for coordinate mapping
  * @param isNormalized - Whether bbox coordinates are normalized (0-1000)
+ * @param totalHeight - Total page height for full-page captures
+ * @param isFullPage - Whether this is a full-page capture
  */
 function showHighlights(
   patterns: DetectedPattern[],
   screenshotSize?: ScreenshotSize,
   isNormalized = true,
+  totalHeight?: number,
+  isFullPage?: boolean,
 ): void {
   clearHighlights();
+
+  // Store patterns for hover sync
+  currentPatterns = patterns;
 
   // Store screenshot size for coordinate mapping
   if (screenshotSize) {
@@ -408,11 +506,20 @@ function showHighlights(
     return;
   }
 
+  debug('Showing highlights:', {
+    patternCount: patterns.length,
+    isFullPage,
+    totalHeight,
+    screenshotSize,
+  });
+
   patterns.forEach((pattern, index) => {
     const patternWithMetadata: PatternWithMetadata = {
       ...pattern,
       screenshotSize: currentScreenshotSize || undefined,
       isNormalized,
+      totalHeight,
+      isFullPage,
     };
     const highlight = createHighlightOverlay(patternWithMetadata, index);
     shadowRoot!.appendChild(highlight);
@@ -495,6 +602,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         message.patterns,
         message.screenshotSize,
         message.isNormalized,
+        message.totalHeight,
+        message.isFullPage,
       );
       sendResponse({ success: true });
       break;

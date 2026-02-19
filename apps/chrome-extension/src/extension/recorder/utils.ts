@@ -848,9 +848,9 @@ ${markdownContent.replace('# Test Events Report\n\n', '')}`;
     // Generate ZIP file
     const zipBlob = await zip.generateAsync({ type: 'blob' });
 
-    // Download ZIP file
+    // Download ZIP file - Dark Pattern Hunter branding
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    saveAs(zipBlob, `midscene-test-events-${timestamp}.zip`);
+    saveAs(zipBlob, `dark-pattern-hunter-events-${timestamp}.zip`);
 
     message.success('All events exported successfully!');
   } catch (error) {

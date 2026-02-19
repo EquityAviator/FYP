@@ -3,8 +3,8 @@ import {
   withErrorHandling,
 } from '@darkpatternhunter/shared/baseDB';
 
-// Database configuration
-const DB_NAME = 'midscene_bridge';
+// Database configuration - Dark Pattern Hunter branding
+const DB_NAME = 'dph_bridge';
 const DB_VERSION = 1;
 const BRIDGE_MESSAGES_STORE = 'bridge_messages';
 

@@ -66,10 +66,10 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
 }) => {
   const [selectedType, setSelectedType] = useState<CodeGenerationType>('yaml');
 
-  // Initialize defaultType from localStorage
+  // Initialize defaultType from localStorage - Dark Pattern Hunter branding
   const [defaultType, setDefaultType] = useState<CodeGenerationType>(() => {
     try {
-      const stored = localStorage.getItem('midscene-default-code-type');
+      const stored = localStorage.getItem('dph-default-code-type');
       if (stored && ['yaml', 'playwright', 'none'].includes(stored)) {
         return stored as CodeGenerationType;
       }
@@ -103,7 +103,7 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
   const updateDefaultType = (newType: CodeGenerationType) => {
     setDefaultType(newType);
     try {
-      localStorage.setItem('midscene-default-code-type', newType);
+      localStorage.setItem('dph-default-code-type', newType);
     } catch (error) {
       console.warn('Failed to save default code type to localStorage:', error);
     }

@@ -34,6 +34,7 @@ import {
   ChromeExtensionProxyPage,
   ChromeExtensionProxyPageAgent,
 } from '@darkpatternhunter/web/chrome-extension';
+import { getAIConfig, AI_STORAGE_KEYS } from '../../utils/aiConfig';
 
 // remember to destroy the agent when the tab is destroyed: agent.page.destroy()
 const extensionAgentForTab = (forceSameTabNavigation = true) => {
@@ -41,7 +42,7 @@ const extensionAgentForTab = (forceSameTabNavigation = true) => {
   return new ChromeExtensionProxyPageAgent(page);
 };
 
-const STORAGE_KEY = 'midscene-popup-mode';
+const STORAGE_KEY = 'dark-pattern-hunter-mode';
 
 export function PlaygroundPopup() {
   const { setPopupTab, config } = useEnvConfig();
@@ -56,7 +57,7 @@ export function PlaygroundPopup() {
         | 'recorder'
         | 'dataset'
         | 'live-guard'
-        | 'settings') || 'playground'
+        | 'settings') || 'live-guard'
     );
   });
 
@@ -67,54 +68,78 @@ export function PlaygroundPopup() {
     }
   }, [currentMode]);
 
-  // Override AI configuration
+  // Override AI configuration - UNIFIED LOCAL AI DEFAULT
   useEffect(() => {
     const loadAndOverrideConfig = async () => {
-      let apiKey = '';
+      // Get AI configuration from centralized storage
+      const aiConfig = await getAIConfig();
 
-      // Get API key from chrome storage if available
-      if (chrome?.storage?.local) {
-        try {
-          const result = await chrome.storage.local.get(['openaiApiKey']);
-          apiKey = result.openaiApiKey; // can be empty or undefined
-        } catch (e) {
-          console.warn('Failed to access chrome storage:', e);
-        }
-      }
-
-      console.log('Chrome Extension - Loading AI config');
-      console.log('Stored API Key found:', !!apiKey);
+      console.log('Dark Pattern Hunter - Loading AI config');
+      console.log('Provider:', aiConfig.provider);
+      console.log('Local AI Host:', aiConfig.localAiHost);
+      console.log('Selected Model:', aiConfig.selectedModel);
 
       let configToOverride: Record<string, string>;
 
-      if (apiKey) {
-        // use OpenAI config
+      if (aiConfig.provider === 'local' || aiConfig.localAiEnabled) {
+        // Use local LM Studio server (DEFAULT)
+        configToOverride = {
+          [MIDSCENE_OPENAI_BASE_URL]: `${aiConfig.localAiHost}/v1`,
+          [MIDSCENE_OPENAI_API_KEY]: 'lm-studio',
+          [OPENAI_API_KEY]: 'lm-studio',
+          [MIDSCENE_MODEL_NAME]: aiConfig.selectedModel || 'local-model',
+          [MIDSCENE_VL_MODE]: '', // Unset VL mode for local models
+        };
+      } else if (aiConfig.openaiApiKey) {
+        // Use OpenAI (only if explicitly configured)
         configToOverride = {
           [MIDSCENE_OPENAI_BASE_URL]: 'https://api.openai.com/v1',
-          [MIDSCENE_OPENAI_API_KEY]: apiKey,
-          [OPENAI_API_KEY]: apiKey,
+          [MIDSCENE_OPENAI_API_KEY]: aiConfig.openaiApiKey,
+          [OPENAI_API_KEY]: aiConfig.openaiApiKey,
           [MIDSCENE_MODEL_NAME]: 'gpt-4o',
-          [MIDSCENE_VL_MODE]: '', // Unset VL mode for OpenAI
+          [MIDSCENE_VL_MODE]: '',
         };
       } else {
-        // fallback to local UI-TARS
+        // Fallback to local LM Studio
         configToOverride = {
-          [MIDSCENE_OPENAI_BASE_URL]: 'http://localhost:8000/v1',
-          [MIDSCENE_OPENAI_API_KEY]: 'not-needed',
-          [OPENAI_API_KEY]: 'not-needed',
-          [MIDSCENE_MODEL_NAME]: 'ui-tars-1.5-7b',
-          [MIDSCENE_VL_MODE]: 'vlm-ui-tars',
+          [MIDSCENE_OPENAI_BASE_URL]: 'http://localhost:1234/v1',
+          [MIDSCENE_OPENAI_API_KEY]: 'lm-studio',
+          [OPENAI_API_KEY]: 'lm-studio',
+          [MIDSCENE_MODEL_NAME]: 'local-model',
+          [MIDSCENE_VL_MODE]: '',
         };
       }
 
-      console.log('Applying AI config:', configToOverride);
+      console.log('Applying AI config:', { 
+        provider: aiConfig.provider, 
+        baseUrl: configToOverride[MIDSCENE_OPENAI_BASE_URL] 
+      });
       safeOverrideAIConfig(configToOverride);
     };
 
     loadAndOverrideConfig();
-  }, [config]); // Re-run if config changes (though usually we initiate this)
+  }, [config]);
 
   const menuItems = [
+    {
+      key: 'live-guard',
+      icon: <SafetyOutlined />,
+      label: 'Live Guard',
+      onClick: () => {
+        setCurrentMode('live-guard');
+        localStorage.setItem(STORAGE_KEY, 'live-guard');
+      },
+    },
+    {
+      key: 'dataset',
+      icon: <DatabaseOutlined />,
+      label: 'Dataset Collection',
+      onClick: () => {
+        setCurrentMode('dataset');
+        setPopupTab('dataset');
+        localStorage.setItem(STORAGE_KEY, 'dataset');
+      },
+    },
     {
       key: 'playground',
       icon: <SendOutlined />,
@@ -143,25 +168,6 @@ export function PlaygroundPopup() {
         setCurrentMode('bridge');
         setPopupTab('bridge');
         localStorage.setItem(STORAGE_KEY, 'bridge');
-      },
-    },
-    {
-      key: 'dataset',
-      icon: <DatabaseOutlined />,
-      label: 'Dataset Collection',
-      onClick: () => {
-        setCurrentMode('dataset');
-        setPopupTab('dataset');
-        localStorage.setItem(STORAGE_KEY, 'dataset');
-      },
-    },
-    {
-      key: 'live-guard',
-      icon: <SafetyOutlined />,
-      label: 'Live Guard',
-      onClick: () => {
-        setCurrentMode('live-guard');
-        localStorage.setItem(STORAGE_KEY, 'live-guard');
       },
     },
     {

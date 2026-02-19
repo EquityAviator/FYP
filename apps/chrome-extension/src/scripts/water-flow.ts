@@ -1,4 +1,5 @@
-const midsceneWaterFlowAnimation = {
+// Dark Pattern Hunter - Water Flow Animation
+const dphWaterFlowAnimation = {
   styleElement: null as null | HTMLStyleElement,
 
   mousePointerAttribute: 'data-water-flow-pointer',
@@ -186,9 +187,9 @@ const midsceneWaterFlowAnimation = {
 export {};
 declare global {
   interface Window {
-    midsceneWaterFlowAnimation: typeof midsceneWaterFlowAnimation;
+    dphWaterFlowAnimation: typeof dphWaterFlowAnimation;
   }
 }
-(window as any).midsceneWaterFlowAnimation =
-  (window as any).midsceneWaterFlowAnimation || midsceneWaterFlowAnimation;
-(window as any).midsceneWaterFlowAnimation.enable();
+(window as any).dphWaterFlowAnimation =
+  (window as any).dphWaterFlowAnimation || dphWaterFlowAnimation;
+(window as any).dphWaterFlowAnimation.enable();

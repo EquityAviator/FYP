@@ -1,6 +1,12 @@
 /**
  * Global AI Configuration Module
  * Centralized storage and state management for AI provider settings
+ * 
+ * This is the SINGLE SOURCE OF TRUTH for all AI configuration.
+ * All modules (Live Guard, Dataset Collection, Playground, Recorder, BridgeMode)
+ * must use this module to get AI configuration.
+ * 
+ * Default: Local AI (LM Studio) at http://localhost:1234
  */
 
 import { getDebug } from '@darkpatternhunter/shared/logger';
@@ -26,9 +32,9 @@ export const AI_STORAGE_KEYS = {
   LEGACY_SELECTED_MODEL: 'selectedModel',
 } as const;
 
-// Default values
+// Default values - LOCAL AI IS DEFAULT
 export const AI_DEFAULTS = {
-  AI_PROVIDER: 'openai' as const,
+  AI_PROVIDER: 'local' as const, // Changed: Local AI is now default
   LOCAL_AI_HOST: 'http://localhost:1234',
 } as const;
 
@@ -143,6 +149,9 @@ export async function saveAIConfig(config: Partial<AIConfig>): Promise<void> {
 /**
  * Get the active model configuration for AI calls
  * This returns the appropriate config based on the current provider
+ * 
+ * PRIORITY: Local AI (LM Studio) is the DEFAULT
+ * All modules must use this function to get AI configuration
  */
 export async function getActiveModelConfig(): Promise<{
   modelName: string;
@@ -155,31 +164,44 @@ export async function getActiveModelConfig(): Promise<{
 }> {
   const config = await getAIConfig();
 
-  if (
-    config.provider === 'local' &&
-    config.localAiEnabled &&
-    config.selectedModel
-  ) {
+  // LOCAL AI IS DEFAULT - Check for local provider first
+  if (config.provider === 'local' || config.localAiEnabled) {
     // Use local LM Studio server
+    const modelName = config.selectedModel || 'local-model';
     return {
-      modelName: config.selectedModel,
+      modelName,
       openaiBaseURL: `${config.localAiHost}/v1`,
       openaiApiKey: 'lm-studio', // Dummy API key for LM Studio
       openaiExtraConfig: {
         dangerouslyAllowBrowser: true,
       },
-      modelDescription: `Local LM Studio model: ${config.selectedModel}`,
+      modelDescription: `Local LM Studio model: ${modelName}`,
       intent: 'VQA',
       from: 'modelConfig',
     };
   }
 
-  // Use default OpenAI configuration
-  // This will be handled by the globalModelConfigManager
+  // OpenAI fallback (only if explicitly configured)
+  if (config.provider === 'openai' && config.openaiApiKey) {
+    return {
+      modelName: 'gpt-4o', // Default OpenAI model
+      openaiApiKey: config.openaiApiKey,
+      modelDescription: 'OpenAI GPT-4o',
+      intent: 'VQA',
+      from: 'modelConfig',
+    };
+  }
+
+  // Final fallback: Try local AI anyway
+  debug('No valid configuration found, falling back to local AI');
   return {
-    modelName: 'gpt-4o', // Default fallback
-    openaiApiKey: config.openaiApiKey || '',
-    modelDescription: 'OpenAI GPT-4o',
+    modelName: config.selectedModel || 'local-model',
+    openaiBaseURL: `${config.localAiHost}/v1`,
+    openaiApiKey: 'lm-studio',
+    openaiExtraConfig: {
+      dangerouslyAllowBrowser: true,
+    },
+    modelDescription: `Local LM Studio model (fallback)`,
     intent: 'VQA',
     from: 'modelConfig',
   };
@@ -187,16 +209,16 @@ export async function getActiveModelConfig(): Promise<{
 
 /**
  * Check if local AI server is reachable
+ * This is used to verify LM Studio is running
  */
-export async function isLocalServerReachable(): Promise<boolean> {
+export async function isLocalServerReachable(
+  host?: string,
+): Promise<boolean> {
   const config = await getAIConfig();
-
-  if (!config.localAiEnabled) {
-    return false;
-  }
+  const serverHost = host || config.localAiHost;
 
   try {
-    const response = await fetch(`${config.localAiHost}/v1/models`, {
+    const response = await fetch(`${serverHost}/v1/models`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

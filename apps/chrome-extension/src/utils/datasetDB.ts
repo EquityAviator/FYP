@@ -4,8 +4,8 @@ import {
 } from '@darkpatternhunter/shared/baseDB';
 import JSZip from 'jszip';
 
-// Database configuration
-const DB_NAME = 'midscene_dataset';
+// Database configuration - Dark Pattern Hunter branding
+const DB_NAME = 'dph_dataset';
 const DB_VERSION = 1;
 const DATASET_ENTRIES_STORE = 'dataset_entries';
 

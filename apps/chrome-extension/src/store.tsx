@@ -39,10 +39,10 @@ export interface RecordingSession {
   };
 }
 
-// Storage keys
-const RECORDING_SESSIONS_KEY = 'midscene-recording-sessions';
-const CURRENT_SESSION_ID_KEY = 'midscene-current-session-id';
-const RECORDING_STATE_KEY = 'midscene-recording-state';
+// Storage keys - Dark Pattern Hunter branding
+const RECORDING_SESSIONS_KEY = 'dph-recording-sessions';
+const CURRENT_SESSION_ID_KEY = 'dph-current-session-id';
+const RECORDING_STATE_KEY = 'dph-recording-state';
 
 // Helper functions for persistence with IndexedDB
 const loadSessionsFromStorage = async (): Promise<RecordingSession[]> => {
@@ -365,7 +365,7 @@ export const useRecordStore = create<{
   },
 }));
 
-const CONFIG_KEY = 'midscene-env-config';
+const CONFIG_KEY = 'dph-env-config';
 
 /**
  * Service Mode
